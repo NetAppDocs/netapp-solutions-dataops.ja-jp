@@ -1,0 +1,75 @@
+---
+sidebar: sidebar 
+permalink: automation/authentication-tokens.html 
+summary: このページでは、 NetApp Cloud Manager を介して CVO および Cloud Manager Connector のデプロイメントに必要な更新トークンとアクセス キー/シークレット キーを収集するための詳細情報を提供します。 
+keywords: netapp, solutions, automation, ansible 
+---
+= NetAppソリューション自動化
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+このページでは、 NetApp Cloud Manager を介して CVO および Cloud Manager Connector のデプロイメントに必要な更新トークンとアクセス キー/シークレット キーを収集するための詳細情報を提供します。
+
+
+
+== NetApp Cloud Manager を使用した CVO およびコネクタの AWS 認証要件
+
+AWX/Ansible Tower 経由で Ansible プレイブックを使用して CVO およびコネクタの自動デプロイメントを構成するには、次の情報が必要です。
+
+
+
+=== AWS からアクセスキー/シークレットキーを取得する
+
+. Cloud Manager に CVO とコネクタをデプロイするには、AWS アクセス/シークレット キーが必要です。  IAM -> ユーザー -> ユーザー名 -> セキュリティ認証情報 -> アクセスキーの作成 を起動して、AWS コンソールでキーを取得します。
+. アクセス キーをコピーし、コネクタおよび CVO の展開で使用できるように安全な場所に保管します。
+
+
+
+NOTE: キーを紛失した場合は、別のアクセスキーを作成し、紛失したキーを削除できます。
+
+image:access-keys.png["トークンをリフレッシュ"]
+
+
+
+=== NetApp Cloud Centralからリフレッシュトークンを取得する
+
+. アカウントの資格情報を使用してクラウドセントラルアカウントにログインします。 https://services.cloud.netapp.com/refresh-token[]
+. リフレッシュ トークンを生成し、デプロイメント用に保存します。
+
+
+image:token-authentication.png["トークンをリフレッシュ"]
+
+
+
+=== クライアントIDの取得
+
+. APIページにアクセスしてクライアントIDをコピーします。 https://services.cloud.netapp.com/developer-hub[] 。
+. 右上隅の「認証方法を学ぶ」をクリックします。
+. ログインにユーザー名/パスワードが必要な場合は、ポップアップ表示される認証ウィンドウで、通常のアクセスからクライアント ID をコピーします。  SSO を使用するフェデレーション ユーザーは、「トークンの更新タブ」からクライアント ID をコピーする必要があります。
+
+
+image:client-id.png["クライアントID"]
+
+
+
+=== AWSからキーペアを取得する
+
+. AWS コンソールで、「キーペア」を検索し、「pem」でキーペアを作成します。  key_pair の名前を覚えておいてください。コネクタをデプロイするときにこの名前を使用します。
+
+
+image:key-pair.png["キーペア"]
+
+
+
+=== アカウントIDの取得
+
+. Cloud Manager で、[アカウント] > [アカウントの管理] をクリックし、AWX の変数で使用するアカウント ID をコピーします。
+
+
+image:account-id.png["クライアントID"]

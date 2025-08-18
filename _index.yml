@@ -1,0 +1,28 @@
+---
+indexpage:
+  title: NetAppデータ管理ソリューション
+  summary: NetAppソリューションは、お客様の最も重要なビジネス ニーズをサポートするNetApp製品およびサービスのポートフォリオを重視した、戦略およびテクノロジ機能のセットです。
+  lead: NetAppソリューションは、お客様の最も重要なビジネス ニーズをサポートするNetApp製品およびサービスのポートフォリオを重視した、戦略およびテクノロジ機能のセットです。
+  tiles:
+  - title: 始めましょう
+    links:
+    - title: 新機能
+      url: "/whats-new.html"
+  - title: データ移行とデータ保護
+    links:
+    - title: サイバーボールトでデータを保護する
+      url: "/cyber-vault/ontap-cyber-vault-overview.html"
+    - title: NetApp XCPでデータを移行する
+      url: "/xcp/xcp-bp-introduction.html"
+  - title: ソリューション自動化
+    links:
+    - title: はじめに
+      url: "/automation/automation-introduction.html"
+  - title: ソリューションのリクエストとフィードバック
+    links:
+    - title: リクエストの自動化
+      url: https://github.com/NetAppDocs/netapp-solutions/issues/new?body=[Request%20Automation]%0d%0a%0d%0aSolution%20Name:%20%0d%0aRequest%20Title:%20%0d%0aDescription:%0d%0aSuggestions:&title=Request%20Automation%20-%20%3Crequest_title%3E
+    - title: 新しい解決策を提案する
+      url: https://github.com/NetAppDocs/netapp-solutions/issues/new?body=[Request%20Solution]%0d%0a%0d%0aSolution%20Use%20Case:%20%0d%0aSolution%20Description:%20%0d%0aAdditional%20Comments:&title=Request%20Solution%20-%20%3Csolution%3E
+    - title: ソリューションのフィードバックを提供する
+      url: https://github.com/NetAppDocs/netapp-solutions/issues/new?body=[Solution%20Feedback]%0d%0a%0d%0aSolution%20Name:%20%0d%0aSolution%20Feedback:%20%0d%0aAdditional%20Comments:&title=Solution%20Feedback%20-%20%3Csolution%3E

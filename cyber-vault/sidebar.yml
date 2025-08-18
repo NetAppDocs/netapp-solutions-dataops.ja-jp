@@ -1,0 +1,39 @@
+---
+section: ontap-cybervault
+title: ONTAPサイバーボールトによるデータ保護
+pdf-filename: ONTAPサイバーボールト
+entries:
+- title: ONTAPサイバーボールトの概要
+  url: "/cyber-vault/ontap-cyber-vault-overview.html"
+- title: サイバー金庫の用語
+  url: "/cyber-vault/ontap-cyber-vault-terminology.html"
+- title: ONTAP向けサイバー ボールトのサイズ設定
+  url: "/cyber-vault/ontap-cyber-vault-sizing.html"
+- title: サイバー金庫を作成する
+  url: "/cyber-vault/ontap-create-cyber-vault-task.html"
+- title: サイバー金庫の強化
+  url: "/cyber-vault/ontap-cyber-vault-hardening.html"
+- title: サイバー金庫の相互運用性
+  url: "/cyber-vault/ontap-cyber-vault-interop.html"
+- title: サイバーボールトに関するよくある質問
+  url: "/cyber-vault/ontap-cyber-vault-faq.html"
+- title: サイバー金庫のリソース
+  url: "/cyber-vault/ontap-cyber-vault-resources.html"
+- title: PowerShell を使用したONTAPサイバー ボールトの作成、強化、検証
+  entries:
+  - title: 概要
+    url: "/cyber-vault/ontap-cyber-vault-ps-overview.html"
+  - title: サイバー金庫の作成
+    url: "/cyber-vault/ontap-cyber-vault-ps-creation.html"
+  - title: サイバー金庫の強化
+    url: "/cyber-vault/ontap-cyber-vault-ps-hardening.html"
+  - title: サイバー金庫の検証
+    url: "/cyber-vault/ontap-cyber-vault-ps-validation.html"
+  - title: サイバーボールトデータ復旧
+    url: "/cyber-vault/ontap-cyber-vault-ps-dr.html"
+  - title: その他の考慮事項
+    url: "/cyber-vault/ontap-cyber-vault-ps-consider.html"
+  - title: 設定、分析、cronスクリプト
+    url: "/cyber-vault/ontap-cyber-vault-ps-script.html"
+  - title: サイバー金庫の結論
+    url: "/cyber-vault/ontap-cyber-vault-ps-conclusion.html"

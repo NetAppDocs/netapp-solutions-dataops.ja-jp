@@ -1,0 +1,47 @@
+---
+section: bp-xcp
+title: NetApp XCPによるデータ移行
+pdf-filename: NetApp XCPによるデータ移行
+entries:
+- title: はじめに
+  url: "/xcp/xcp-bp-introduction.html"
+- title: NetApp XCP
+  url: "/xcp/xcp-bp-netapp-xcp-overview.html"
+- title: 移行ワークフロー
+  url: "/xcp/xcp-bp-migration-workflow.html"
+- title: ファイル分析
+  url: "/xcp/xcp-bp-file-analytics.html"
+- title: 導入手順
+  url: "/xcp/xcp-bp-deployment-steps.html"
+- title: サイズガイドライン
+  url: "/xcp/xcp-bp-sizing-guidelines.html"
+- title: パフォーマンス調整
+  url: "/xcp/xcp-bp-performance-tuning.html"
+- title: 顧客シナリオ
+  entries:
+  - title: 概要
+    url: "/xcp/xcp-bp-scenarios.html"
+  - title: データレイクからONTAP NFSへ
+    url: "/xcp/xcp-bp-data-lake-to-ontap-nfs.html"
+  - title: ONTAP NFSへのハイパフォーマンスコンピューティング
+    url: "/xcp/xcp-bp-hpc.html"
+  - title: XCP Data Moverを使用して数百万の小さなファイルを柔軟なストレージに移行する
+    url: "/xcp/xcp-bp-small-files.html"
+  - title: XCP Data Moverを使用して大容量ファイルを移行する
+    url: "/xcp/xcp-bp-large-files.html"
+  - title: 重複ファイル
+    url: "/xcp/xcp-bp-duplicate-files.html"
+  - title: 特定の日付に基づくデータのスキャンとコピー
+    url: "/xcp/xcp-bp-specific-date.html"
+  - title: SMB/CIFS共有からCSVファイルを作成する
+    url: "/xcp/xcp-bp-smb-cifs-csv.html"
+  - title: 7-ModeからONTAPへのデータ移行
+    url: "/xcp/xcp-bp-7-mode.html"
+  - title: ACLを使用したCIFSデータ移行 ソースストレージボックスからONTAPへ
+    url: "/xcp/xcp-bp-cifs-acls.html"
+- title: ベストプラクティスのガイドラインと推奨事項
+  url: "/xcp/xcp-bp-best-practices.html"
+- title: トラブルシューティング
+  url: "/xcp/xcp-bp-troubleshooting.html"
+- title: 詳細情報の入手方法
+  url: "/xcp/xcp-additional-info.html"

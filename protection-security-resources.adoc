@@ -1,0 +1,54 @@
+---
+sidebar: sidebar 
+permalink: protection-security-resources.html 
+keywords: 'netapp, solutions, data management, what"s new, updates, change log' 
+summary: データ保護とセキュリティに関連する追加の技術レポート。 
+---
+= データ保護とセキュリティに関する追加リソース
+:allow-uri-read: 
+:icons: font
+:imagesdir: ./media/
+
+
+[role="lead"]
+データ保護とセキュリティに関連する技術レポートにアクセスするには、以下のリンクをご覧ください。
+
+
+
+== NVA-1143: NetApp HCI - マルチテナント インフラストラクチャ向け HyTrust を使用した FISMA 向け NIST セキュリティ制御 - NVA の設計と導入
+
+Arvind Ramakrishnan、Abhinav Singh、 NetApp
+
+NVA-1143 では、プライベート クラウド インフラストラクチャとマルチテナント展開に不可欠な、米国国立標準技術研究所 (NIST) SP 800-53 リビジョン 4 のセキュリティとプライバシーの制御を満たすようにNetApp HCI を設計および展開する方法について説明します。
+
+link:https://www.netapp.com/pdf.html?item=/media/17065-nva1143pdf.pdf["NVA-1143: NetApp HCI - マルチテナント インフラストラクチャ向け HyTrust を使用した FISMA 向け NIST セキュリティ制御 - NVA の設計と導入"^]
+
+
+
+== TR-4320: NetApp EシリーズとCommvault Data Platform V11 - リファレンスアーキテクチャとストレージのベストプラクティス
+
+Akash Gupta、 NetApp Girish Chanchlani、Commvault
+
+TR-4320 では、Commvault Data Platform V11 環境でNetApp E シリーズ ストレージを使用する場合のリファレンス アーキテクチャとベスト プラクティスについて概説しています。  Commvault とNetApp は共同でこのリファレンス アーキテクチャを開発し、 NetApp E シリーズ ストレージを使用した Commvault Data Platform V11 の導入に関するガイダンスを提供し、このソリューションの適用までの時間を短縮します。
+
+link:https://www.netapp.com/pdf.html?item=/media/17042-tr4320pdf.pdf["TR-4320: NetApp EシリーズとCommvault Data Platform V11 - リファレンスアーキテクチャとストレージのベストプラクティス"^]
+
+
+
+== TR-4471: E シリーズおよび EF シリーズのリファレンス アーキテクチャと Veeam Backup & Replication 9.5 を使用したストレージのベスト プラクティス
+
+Akash Gupta、 NetApp Shawn Lieu（アメリカ）、Stefan Renner（EMEA）、Michael Cade（パフォーマンス）、Veeam
+
+TR-4471 では、Veeam Backup & Replication 9.5 環境でNetApp E シリーズ ストレージを使用する場合のリファレンス アーキテクチャとベスト プラクティスについて概説しています。
+
+link:https://www.netapp.com/pdf.html?item=/media/17159-tr4471pdf.pdf["TR-4471: Veeam Backup  Replication 9.5 を使用した E シリーズおよび EF シリーズのリファレンス アーキテクチャとストレージのベスト プラクティス"^]
+
+
+
+== TR-4704: NetApp Eシリーズストレージを使用したVeritas NetBackupの導入
+
+Akash Gupta氏とPrincipled Technologies、 NetApp
+
+TR-4704 では、 NetApp E シリーズ ストレージへの Veritas NetBackup の導入について説明します。
+
+link:https://www.netapp.com/pdf.html?item=/media/16433-tr-4704pdf.pdf["TR-4704: NetApp Eシリーズストレージを使用したVeritas NetBackupの導入"^]

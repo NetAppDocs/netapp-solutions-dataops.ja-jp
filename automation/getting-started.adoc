@@ -1,0 +1,193 @@
+---
+sidebar: sidebar 
+permalink: automation/getting-started.html 
+summary: NetAppソリューションの自動化により、顧客は多くの一般的なインフラストラクチャおよびアプリケーション タスクの導入、構成、実行を自動化できます。 
+keywords: netapp, awx, tower, ansible tower, solutions, automation, ansible, getting, started 
+---
+= NetAppソリューション自動化入門
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+NetAppソリューションの自動化により、 NetAppソリューションで使用される多くの一般的なタスクがシンプルになり、繰り返し実行できるようになります。
+
+ソリューションの自動化を実行する前に、自動化の実行方法に合わせて環境を構成する必要があります。コマンドラインから、または AWX や Tower などのツールを通じて自動化を実行するオプションがあります。
+
+次のセクションでは、指定された各環境の環境を構成するために必要な手順の概要を説明します。
+
+.RHEL / CentOS での CLI デプロイメント用の Ansible コントロールノードをセットアップする
+[%collapsible%open]
+====
+. Ansible コントロール ノードの要件:
++
+.. 次のパッケージがインストールされた RHEL/CentOS マシン:
++
+... Python3
+... ピップ3
+... Ansible (バージョン 2.10.0 以上)
+... ギット
+
+
+
+
+
+
+上記の要件がインストールされていない新しい RHEL/CentOS マシンがある場合は、以下の手順に従ってそのマシンを Ansible コントロール ノードとして設定します。
+
+. RHEL-8/RHEL-7 用の Ansible リポジトリを有効にする
++
+.. RHEL-8の場合（以下のコマンドをrootとして実行）
++
+[source, cli]
+----
+subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms
+----
+.. RHEL-7の場合（以下のコマンドをrootとして実行）
++
+[source, cli]
+----
+subscription-manager repos --enable rhel-7-server-ansible-2.9-rpms
+----
+
+
+. 以下の内容をターミナルに貼り付けます
++
+[source, cli]
+----
+sudo yum -y install python3 >> install.log
+sudo yum -y install python3-pip >> install.log
+python3 -W ignore -m pip --disable-pip-version-check install ansible >> install.log
+sudo yum -y install git >> install.log
+----
+
+
+====
+.Ubuntu / Debian での CLI デプロイメント用に Ansible コントロールノードを設定する
+[%collapsible%open]
+====
+. Ansible コントロール ノードの要件:
++
+.. 次のパッケージがインストールされた Ubuntu/Debian マシン:
++
+... Python3
+... ピップ3
+... Ansible (バージョン 2.10.0 以上)
+... ギット
+
+
+
+
+
+
+上記の要件がインストールされていない新しい Ubuntu/Debian マシンがある場合は、以下の手順に従ってそのマシンを Ansible コントロール ノードとして設定してください。
+
+. 以下の内容をターミナルに貼り付けます
++
+[source, cli]
+----
+sudo apt-get -y install python3 >> outputlog.txt
+sudo apt-get -y install python3-pip >> outputlog.txt
+python3 -W ignore -m pip --disable-pip-version-check install ansible >> outputlog.txt
+sudo apt-get -y install git >> outputlog.txt
+----
+
+
+====
+.Tower / AWX デプロイメント用の Ansible Tower または AWX のセットアップ
+[%collapsible%open]
+====
+このセクションでは、 NetApp自動化ソリューションを使用するための環境を準備する AWX/Ansible Tower のパラメータを構成するために必要な手順について説明します。
+
+. インベントリを構成します。
++
+.. 「リソース」→「インベントリ」→「追加」に移動し、「インベントリの追加」をクリックします。
+.. 名前と組織の詳細を入力し、「保存」をクリックします。
+.. [インベントリ] ページで、作成したインベントリ リソースをクリックします。
+.. 在庫変数がある場合は、変数フィールドに貼り付けます。
+.. [グループ]サブメニューに移動し、[追加]をクリックします。
+.. グループの名前を入力し、グループ変数をコピーして（必要な場合）、「保存」をクリックします。
+.. 作成したグループをクリックし、「ホスト」サブメニューに移動して、「新しいホストの追加」をクリックします。
+.. ホストのホスト名と IP アドレスを入力し、ホスト変数 (必要な場合) を貼り付けて、[保存] をクリックします。
+
+
+. 資格情報の種類を作成します。  ONTAP、Element、VMware、またはその他の HTTPS ベースのトランスポート接続を伴うソリューションの場合、ユーザー名とパスワードのエントリと一致するように認証情報の種類を設定する必要があります。
++
+.. 「管理」→「資格情報の種類」に移動し、「追加」をクリックします。
+.. 名前と説明を入力します。
+.. 入力構成に次の内容を貼り付けます。
+
+
+
+
+[listing]
+----
+fields:
+- id: username
+type: string
+label: Username
+- id: password
+type: string
+label: Password
+secret: true
+- id: vsadmin_password
+type: string
+label: vsadmin_password
+secret: true
+----
+. 次の内容をインジェクター構成に貼り付けます。
+
+
+[listing]
+----
+extra_vars:
+password: '{{ password }}'
+username: '{{ username }}'
+vsadmin_password: '{{ vsadmin_password }}'
+----
+. 資格情報を設定します。
++
+.. 「リソース」→「資格情報」に移動し、「追加」をクリックします。
+.. 名前と組織の詳細を入力します。
+.. 正しい資格情報タイプを選択します。標準の SSH ログインを使用する場合は、マシン タイプを選択するか、作成したカスタム資格情報タイプを選択します。
+.. その他の対応する詳細を入力し、「保存」をクリックします。
+
+
+. プロジェクトを構成します。
++
+.. 「リソース」→「プロジェクト」に移動し、「追加」をクリックします。
+.. 名前と組織の詳細を入力します。
+.. ソース管理資格情報タイプとして Git を選択します。
+.. 特定のソリューションに対応するソース管理 URL (または git クローン URL) を貼り付けます。
+.. オプションで、Git URL がアクセス制御されている場合は、ソース管理資格情報で対応する資格情報を作成して添付します。
+.. [Save]をクリックします。
+
+
+. ジョブ テンプレートを構成します。
++
+.. 「リソース」→「テンプレート」→「追加」に移動し、「ジョブテンプレートの追加」をクリックします。
+.. 名前と説明を入力します。
+.. ジョブ タイプを選択します。実行ではプレイブックに基づいてシステムが構成され、チェックでは実際にシステムを構成せずにプレイブックのドライ ランが実行されます。
+.. プレイブックに対応するインベントリ、プロジェクト、および資格情報を選択します。
+.. ジョブ テンプレートの一部として実行するプレイブックを選択します。
+.. 通常、変数は実行時に貼り付けられます。したがって、実行時に変数を入力するためのプロンプトを表示するには、変数フィールドに対応する「起動時にプロンプトを表示」チェックボックスをオンにしてください。
+.. 必要に応じてその他の詳細を入力し、「保存」をクリックします。
+
+
+. ジョブ テンプレートを起動します。
++
+.. 「リソース」→「テンプレート」に移動します。
+.. 目的のテンプレートをクリックし、「起動」をクリックします。
+.. 起動時にプロンプトが表示されたら変数を入力し、もう一度「起動」をクリックします。
+
+
+
+
+====
+詳細については、link:https://netapp.io/2018/10/08/getting-started-with-netapp-and-ansible-install-ansible/["NetAppソリューションの自動化とAnsibleの導入"]
+
+自動化をリクエストするには、link:https://github.com/NetAppDocs/netapp-solutions/issues/new?body=%5BRequest%20Automation%5D%0d%0a%0d%0aSolution%20Name:%20%0d%0aRequest%20Title:%20%0d%0aDescription:%0d%0aSuggestions:&title=Request%20Automation%20-%20["自動化リクエストフォーム"] 。

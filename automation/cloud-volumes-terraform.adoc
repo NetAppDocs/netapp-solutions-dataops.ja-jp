@@ -1,0 +1,1792 @@
+---
+sidebar: sidebar 
+permalink: automation/cloud-volumes-terraform.html 
+keywords: AWS, Azure, GCP, FSX, CVO, ANF, NetApp Volumes, Terraform, automation 
+summary: 'このページでは、Terraform を使用してクラウド プロバイダー (AWS、Azure、GCP) に Netapp ボリュームをデプロイする自動化方法について説明します。' 
+---
+= Terraform による Cloud Volumes の自動化
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+このソリューションでは、Terraform モジュールを使用して、AWS (CVO シングル ノード、CVO HA、FSX ONTAP) および Azure (CVO シングル ノード、CVO HA、ANF) 上の Cloud Volumes の自動デプロイメントについて説明します。コードは次の場所にあります https://github.com/NetApp/na_cloud_volumes_automation[]
+
+
+
+== 前提条件
+
+. テラフォーム >= 0.13
+. クラウドマネージャーアカウント
+. クラウドプロバイダーアカウント – AWS、Azure
+. ホストマシン（Terraform でサポートされている任意の OS）
+
+
+
+
+== プロバイダーのドキュメント
+
+Cloud Manager の Terraform プロバイダーのドキュメントは次の場所から入手できます。link:https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs["https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs"]
+
+
+
+=== プロバイダーのバージョンを制御する
+
+プロバイダーのバージョンも制御できることに注意してください。これは、Terraform 構成の required_providers ブロックによって制御されます。
+
+構文は次のとおりです。
+
+[source, cli]
+----
+terraform {
+  required_providers {
+    netapp-cloudmanager = {
+      source = "NetApp/netapp-cloudmanager"
+      version = ">= 23.0.0"
+    }
+  }
+}
+----
+プロバイダーのバージョン管理の詳細については、こちらをご覧ください。
+
+
+
+== 特定のモジュールの実行
+
+.AWS
+[%collapsible%open]
+====
+[role="tabbed-block"]
+=====
+.CVO シングルノード展開
+--
+.AWS 上のNetApp CVO (シングルノードインスタンス) のデプロイメント用の Terraform 構成ファイル
+このセクションには、AWS (Amazon Web Services) 上で単一ノードのNetApp CVO (Cloud Volumes ONTAP) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. CLI から AWS 認証情報を設定します。
++
+[source, cli]
+----
+    aws configure
+----
++
+** AWS アクセスキー ID [なし]: accesskey
+** AWS シークレットアクセスキー [なし]: secretkey
+** デフォルトのリージョン名 [なし]: us-west-2
+** デフォルトの出力形式 [なし]: json
+
+
+. 変数の値を更新する `vars/aws_cvo_single_node_deployment.tfvar`
++
+
+NOTE: 変数「aws_connector_deploy_bool」の値を true/false に設定することで、コネクタをデプロイすることを選択できます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.aws_sn" -var-file="vars/aws_cvo_single_node_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.aws_sn" -var-file="vars/aws_cvo_single_node_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`Connector`
+
+CVO デプロイメント用のNetApp AWS コネクタ インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *aws_connector_deploy_bool* | ブール | (必須) コネクタのデプロイメントを確認します。 
+
+
+| *aws_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *aws_connector_region* | 弦 | (必須) Cloud Manager コネクタが作成されるリージョン。 
+
+
+| *aws_connector_key_name* | 弦 | (必須) コネクタ インスタンスに使用するキー ペアの名前。 
+
+
+| *aws_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *aws_connector_instance_type* | 弦 | (必須) インスタンスのタイプ (例: t3.xlarge)。少なくとも 4 つの CPU と 16 GB のメモリが必要です。 
+
+
+| *aws_connector_subnet_id* | 弦 | (必須) インスタンスのサブネットの ID。 
+
+
+| *aws_connector_security_group_id* | 弦 | (必須) インスタンスのセキュリティ グループの ID。複数のセキュリティ グループを ',' で区切って指定できます。 
+
+
+| *aws_connector_iam_instance_profile_name* | 弦 | (必須) コネクタのインスタンス プロファイルの名前。 
+
+
+| *aws_connector_account_id* | 弦 | (オプション) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *aws_connector_public_ip_bool* | ブール | (オプション) インスタンスにパブリック IP アドレスを関連付けるかどうかを示します。指定しない場合は、サブネットの構成に基づいて関連付けが行われます。 
+|===
+`Single Node Instance`
+
+単一のNetApp CVO インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *cvo_region* | 弦 | (必須) 作業環境が作成されるリージョン。 
+
+
+| *cvo_サブネットID* | 弦 | (必須) 作業環境が作成されるサブネット ID。 
+
+
+| *cvo_vpc_id* | 弦 | (オプション) 作業環境が作成される VPC ID。この引数を指定しない場合は、指定されたサブネット ID を使用して VPC が計算されます。 
+
+
+| *cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *cvo_writing_speed_state* | 弦 | (オプション) Cloud Volumes ONTAPの書き込み速度設定: ['NORMAL'、'HIGH']。デフォルトは「NORMAL」です。 
+|===
+--
+.CVO HA 展開
+--
+.AWS 上でのNetApp CVO (HA ペア) のデプロイメント用の Terraform 構成ファイル
+このセクションには、AWS (Amazon Web Services) 上の高可用性ペアでNetApp CVO (Cloud Volumes ONTAP) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. CLI から AWS 認証情報を設定します。
++
+[source, cli]
+----
+    aws configure
+----
++
+** AWS アクセスキー ID [なし]: accesskey
+** AWS シークレットアクセスキー [なし]: secretkey
+** デフォルトのリージョン名 [なし]: us-west-2
+** デフォルトの出力形式 [なし]: json
+
+
+. 変数の値を更新する `vars/aws_cvo_ha_deployment.tfvars`。
++
+
+NOTE: 変数「aws_connector_deploy_bool」の値を true/false に設定することで、コネクタをデプロイすることを選択できます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+      terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.aws_ha" -var-file="vars/aws_cvo_ha_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.aws_ha" -var-file="vars/aws_cvo_ha_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`Connector`
+
+CVO デプロイメント用のNetApp AWS コネクタ インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *aws_connector_deploy_bool* | ブール | (必須) コネクタのデプロイメントを確認します。 
+
+
+| *aws_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *aws_connector_region* | 弦 | (必須) Cloud Manager コネクタが作成されるリージョン。 
+
+
+| *aws_connector_key_name* | 弦 | (必須) コネクタ インスタンスに使用するキー ペアの名前。 
+
+
+| *aws_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *aws_connector_instance_type* | 弦 | (必須) インスタンスのタイプ (例: t3.xlarge)。少なくとも 4 つの CPU と 16 GB のメモリが必要です。 
+
+
+| *aws_connector_subnet_id* | 弦 | (必須) インスタンスのサブネットの ID。 
+
+
+| *aws_connector_security_group_id* | 弦 | (必須) インスタンスのセキュリティ グループの ID。複数のセキュリティ グループを ',' で区切って指定できます。 
+
+
+| *aws_connector_iam_instance_profile_name* | 弦 | (必須) コネクタのインスタンス プロファイルの名前。 
+
+
+| *aws_connector_account_id* | 弦 | (オプション) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *aws_connector_public_ip_bool* | ブール | (オプション) インスタンスにパブリック IP アドレスを関連付けるかどうかを示します。指定しない場合は、サブネットの構成に基づいて関連付けが行われます。 
+|===
+`HA Pair`
+
+HA ペアのNetApp CVO インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *cvo_is_ha* | ブール | (オプション) 作業環境が HA ペアであるかどうかを示します [true、false]。デフォルトはfalseです。 
+
+
+| *cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *cvo_region* | 弦 | (必須) 作業環境が作成されるリージョン。 
+
+
+| *cvo_node1_サブネットID* | 弦 | (必須) 最初のノードが作成されるサブネット ID。 
+
+
+| *cvo_node2_サブネットID* | 弦 | (必須) 2 番目のノードが作成されるサブネット ID。 
+
+
+| *cvo_vpc_id* | 弦 | (オプション) 作業環境が作成される VPC ID。この引数を指定しない場合は、指定されたサブネット ID を使用して VPC が計算されます。 
+
+
+| *cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *cvo_フェイルオーバーモード* | 弦 | (オプション) HA の場合、HA ペアのフェイルオーバー モード: ['PrivateIP', 'FloatingIP']。  「PrivateIP」は単一のアベイラビリティーゾーン用で、「FloatingIP」は複数のアベイラビリティーゾーン用です。 
+
+
+| *cvo_mediator_subnet_id* | 弦 | (オプション) HA の場合、メディエーターのサブネット ID。 
+
+
+| *cvo_mediator_key_pair_name* | 弦 | (オプション) HA の場合、メディエーター インスタンスのキー ペア名。 
+
+
+| *cvo_cluster_floating_ip* | 弦 | (オプション) HA FloatingIP の場合、クラスター管理フローティング IP アドレス。 
+
+
+| *cvo_data_floating_ip* | 弦 | (オプション) HA FloatingIP の場合、データのフローティング IP アドレス。 
+
+
+| *cvo_data_floating_ip2* | 弦 | (オプション) HA FloatingIP の場合、データのフローティング IP アドレス。 
+
+
+| *cvo_svm_フローティングIP* | 弦 | (オプション) HA FloatingIP の場合、SVM 管理フローティング IP アドレス。 
+
+
+| *cvo_route_table_ids* | リスト | (オプション) HA FloatingIP の場合、フローティング IP で更新されるルート テーブル ID のリスト。 
+|===
+--
+.FSx デプロイメント
+--
+.AWS にNetApp ONTAP FSx を展開するための Terraform 構成ファイル
+このセクションには、AWS (Amazon Web Services) にNetApp ONTAP FSx をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. CLI から AWS 認証情報を設定します。
++
+[source, cli]
+----
+    aws configure
+----
++
+** AWS アクセスキー ID [なし]: accesskey
+** AWS シークレットアクセスキー [なし]: secretkey
+** デフォルトのリージョン名 [なし]: us-west-2
+** デフォルトの出力形式 [なし]:
+
+
+. 変数の値を更新する `vars/aws_fsx_deployment.tfvars`
++
+
+NOTE: 変数「aws_connector_deploy_bool」の値を true/false に設定することで、コネクタをデプロイすることを選択できます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.aws_fsx" -var-file="vars/aws_fsx_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.aws_fsx" -var-file="vars/aws_fsx_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`Connector`
+
+NetApp AWS コネクタ インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *aws_connector_deploy_bool* | ブール | (必須) コネクタのデプロイメントを確認します。 
+
+
+| *aws_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *aws_connector_region* | 弦 | (必須) Cloud Manager コネクタが作成されるリージョン。 
+
+
+| *aws_connector_key_name* | 弦 | (必須) コネクタ インスタンスに使用するキー ペアの名前。 
+
+
+| *aws_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *aws_connector_instance_type* | 弦 | (必須) インスタンスのタイプ (例: t3.xlarge)。少なくとも 4 つの CPU と 16 GB のメモリが必要です。 
+
+
+| *aws_connector_subnet_id* | 弦 | (必須) インスタンスのサブネットの ID。 
+
+
+| *aws_connector_security_group_id* | 弦 | (必須) インスタンスのセキュリティ グループの ID。複数のセキュリティ グループを ',' で区切って指定できます。 
+
+
+| *aws_connector_iam_instance_profile_name* | 弦 | (必須) コネクタのインスタンス プロファイルの名前。 
+
+
+| *aws_connector_account_id* | 弦 | (オプション) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *aws_connector_public_ip_bool* | ブール | (オプション) インスタンスにパブリック IP アドレスを関連付けるかどうかを示します。指定しない場合は、サブネットの構成に基づいて関連付けが行われます。 
+|===
+`FSx Instance`
+
+NetApp ONTAP FSx インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *fsx_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *fsx_region* | 弦 | (必須) 作業環境が作成されるリージョン。 
+
+
+| *fsx_プライマリ_サブネット_id* | 弦 | (必須) 作業環境が作成されるプライマリサブネット ID。 
+
+
+| *fsx_セカンダリ_サブネット_id* | 弦 | (必須) 作業環境が作成されるセカンダリサブネット ID。 
+
+
+| *fsxアカウントID* | 弦 | (必須) FSx インスタンスが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *fsx_ワークスペースID* | 弦 | (必須) 作業環境の Cloud Manager ワークスペースの ID。 
+
+
+| *fsx_admin_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *fsx_スループット容量* | 弦 | (オプション) スループットの容量。 
+
+
+| *fsx_ストレージ容量_サイズ* | 弦 | (オプション) 最初のデータ集約の EBS ボリューム サイズ。  GB の場合、単位は [100 または 500] になります。 TBの場合、単位は[1,2,4,8,16]になります。デフォルトは「1」です 
+
+
+| *fsx_ストレージ容量サイズ単位* | 弦 | (オプション) ['GB' または 'TB']。デフォルトは「TB」です。 
+
+
+| *fsx_cloudmanager_aws_credential_name* | 弦 | (必須) AWS 認証情報アカウント名。 
+|===
+--
+=====
+====
+.Azure
+[%collapsible%open]
+====
+[role="tabbed-block"]
+=====
+.ANF
+--
+.Azure に ANF ボリュームを展開するための Terraform 構成ファイル
+このセクションには、Azure で ANF (Azure Netapp Files) ボリュームをデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数の値を更新する `vars/azure_anf.tfvars`。
++
+
+NOTE: 変数「vnet_creation_bool」と「subnet_creation_bool」の値を false に設定し、「subnet_id_for_anf_vol」を指定することにより、既存の vnet とサブネットを使用して ANF ボリュームをデプロイすることを選択できます。これらの値を true に設定して新しい vnet とサブネットを作成することもできます。その場合、サブネット ID は新しく作成されたサブネットから自動的に取得されます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.anf" -var-file="vars/azure_anf.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.anf" -var-file="vars/azure_anf.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`Single Node Instance`
+
+単一のNetApp ANF ボリュームの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *az_場所* | 弦 | (必須) リソースが存在するサポートされている Azure の場所を指定します。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_プレフィックス* | 弦 | (必須) NetAppボリュームを作成するリソース グループの名前。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_vnet_アドレス空間* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるアドレス空間。 
+
+
+| *az_サブネットアドレスプレフィックス* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるサブネット アドレス プレフィックス。 
+
+
+| *az_ボリューム_パス* | 弦 | (必須) ボリュームの一意のファイル パス。マウント ターゲットを作成するときに使用されます。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_容量プールのサイズ* | 整数 | (必須) 容量プールのサイズ (TB 単位)。 
+
+
+| *az_vnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しい vnet を作成する場合。設定する `false`既存の vnet を使用します。 
+
+
+| *az_subnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しいサブネットを作成します。設定する `false`既存のサブネットを使用します。 
+
+
+| *az_subnet_id_for_anf_vol* | 弦 | (必須) 既存のサブネットを使用する場合は、サブネットIDを指定します。 `subnet_creation_bool`真実に。  false に設定する場合は、デフォルト値のままにします。 
+
+
+| *az_netapp_pool_service_level* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_サービスレベル* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_プロトコル* | 弦 | (オプション) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_security_style* | 弦 | (オプション) ボリュームのセキュリティスタイル。許容値は次のとおりです。 `Unix`または `Ntfs`。指定しない場合は、デフォルトでシングルプロトコルボリュームが作成されます。 `Unix`もしそうなら `NFSv3`または `NFSv4.1`ボリューム、もし `CIFS`、デフォルトは `Ntfs`。デュアルプロトコルボリュームでは、指定しない場合は、その値は `Ntfs`。 
+
+
+| *az_netapp_vol_storage_quota* | 弦 | (必須) ファイル システムに許可される最大ストレージ クォータ (ギガバイト単位)。 
+|===
+
+NOTE: 推奨に従って、このスクリプトは `prevent_destroy`ライフサイクル引数を使用すると、構成ファイル内での偶発的なデータ損失の可能性を軽減できます。詳細については、 `prevent_destroy`ライフサイクル引数については、Terraform のドキュメントを参照してください。 https://developer.hashicorp.com/terraform/tutorials/state/resource-lifecycle#prevent-resource-deletion[] 。
+
+--
+.ANFデータ保護
+--
+.Azure でデータ保護を備えた ANF ボリュームを展開するための Terraform 構成ファイル
+このセクションには、Azure でデータ保護を備えた ANF (Azure Netapp Files) ボリュームをデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数の値を更新する `vars/azure_anf_data_protection.tfvars`。
++
+
+NOTE: 変数「vnet_creation_bool」と「subnet_creation_bool」の値を false に設定し、「subnet_id_for_anf_vol」を指定することにより、既存の vnet とサブネットを使用して ANF ボリュームをデプロイすることを選択できます。これらの値を true に設定して新しい vnet とサブネットを作成することもできます。その場合、サブネット ID は新しく作成されたサブネットから自動的に取得されます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.anf_data_protection" -var-file="vars/azure_anf_data_protection.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.anf_data_protection" -var-file="vars/azure_anf_data_protection.tfvars
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`ANF Data Protection`
+
+データ保護が有効になっている単一の ANF ボリュームの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *az_場所* | 弦 | (必須) リソースが存在するサポートされている Azure の場所を指定します。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_alt_location* | 弦 | (必須) セカンダリボリュームが作成される Azure の場所 
+
+
+| *az_プレフィックス* | 弦 | (必須) NetAppボリュームを作成するリソース グループの名前。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_vnet_プライマリアドレス空間* | 弦 | (必須) ANF プライマリ ボリュームの展開用に新しく作成された vnet によって使用されるアドレス空間。 
+
+
+| *az_vnet_セカンダリアドレス空間* | 弦 | (必須) ANF セカンダリ ボリュームの展開用に新しく作成された vnet で使用されるアドレス空間。 
+
+
+| *az_サブネット_プライマリ_アドレス_プレフィックス* | 弦 | (必須) ANF プライマリ ボリュームの展開用に新しく作成された vnet で使用されるサブネット アドレス プレフィックス。 
+
+
+| *az_サブネットセカンダリアドレスプレフィックス* | 弦 | (必須) ANF セカンダリ ボリュームの展開用に新しく作成された vnet で使用されるサブネット アドレス プレフィックス。 
+
+
+| *az_volume_path_primary* | 弦 | (必須) プライマリ ボリュームの一意のファイル パス。マウント ターゲットを作成するときに使用されます。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_volume_path_secondary* | 弦 | (必須) セカンダリ ボリュームの一意のファイル パス。マウント ターゲットを作成するときに使用されます。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_capacity_pool_size_primary* | 整数 | (必須) 容量プールのサイズ (TB 単位)。 
+
+
+| *az_capacity_pool_size_secondary* | 整数 | (必須) 容量プールのサイズ (TB 単位)。 
+
+
+| *az_vnet_primary_creation_bool* | ブーリアン | （必須）このブール値を `true`プライマリボリュームに新しい vnet を作成する場合。設定する `false`既存の vnet を使用します。 
+
+
+| *az_vnet_secondary_creation_bool* | ブーリアン | （必須）このブール値を `true`セカンダリボリューム用に新しい VNET を作成する場合。設定する `false`既存の vnet を使用します。 
+
+
+| *az_subnet_primary_creation_bool* | ブーリアン | （必須）このブール値を `true`プライマリボリュームの新しいサブネットを作成します。設定する `false`既存のサブネットを使用します。 
+
+
+| *az_subnet_secondary_creation_bool* | ブーリアン | （必須）このブール値を `true`セカンダリボリューム用の新しいサブネットを作成します。設定する `false`既存のサブネットを使用します。 
+
+
+| *az_primary_subnet_id_for_anf_vol* | 弦 | (必須) 既存のサブネットを使用する場合は、サブネットIDを指定します。 `subnet_primary_creation_bool`真実に。  false に設定する場合は、デフォルト値のままにします。 
+
+
+| *az_secondary_subnet_id_for_anf_vol* | 弦 | (必須) 既存のサブネットを使用する場合は、サブネットIDを指定します。 `subnet_secondary_creation_bool`真実に。  false に設定する場合は、デフォルト値のままにします。 
+
+
+| *az_netapp_pool_service_level_primary* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_pool_service_level_secondary* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_service_level_primary* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_service_level_secondary* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_protocol_primary* | 弦 | (オプション) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_protocol_secondary* | 弦 | (オプション) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_storage_quota_primary* | 弦 | (必須) ファイル システムに許可される最大ストレージ クォータ (ギガバイト単位)。 
+
+
+| *az_netapp_vol_storage_quota_secondary* | 弦 | (必須) ファイル システムに許可される最大ストレージ クォータ (ギガバイト単位)。 
+
+
+| *az_dp_レプリケーション頻度* | 弦 | （必須）レプリケーション頻度。サポートされている値は `10minutes`、 `hourly` 、 `daily`値は大文字と小文字が区別されます。 
+|===
+
+NOTE: 推奨に従って、このスクリプトは `prevent_destroy`ライフサイクル引数を使用すると、構成ファイル内での偶発的なデータ損失の可能性を軽減できます。詳細については、 `prevent_destroy`ライフサイクル引数については、Terraform のドキュメントを参照してください。 https://developer.hashicorp.com/terraform/tutorials/state/resource-lifecycle#prevent-resource-deletion[] 。
+
+--
+.ANFデュアルプロトコル
+--
+.Azure でデュアル プロトコルを使用した ANF ボリュームを展開するための Terraform 構成ファイル
+このセクションには、Azure でデュアル プロトコルが有効になっている ANF (Azure Netapp Files) ボリュームをデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数の値を更新する `vars/azure_anf_dual_protocol.tfvars`。
++
+
+NOTE: 変数「vnet_creation_bool」と「subnet_creation_bool」の値を false に設定し、「subnet_id_for_anf_vol」を指定することにより、既存の vnet とサブネットを使用して ANF ボリュームをデプロイすることを選択できます。これらの値を true に設定して新しい vnet とサブネットを作成することもできます。その場合、サブネット ID は新しく作成されたサブネットから自動的に取得されます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.anf_dual_protocol" -var-file="vars/azure_anf_dual_protocol.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.anf_dual_protocol" -var-file="vars/azure_anf_dual_protocol.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`Single Node Instance`
+
+デュアル プロトコルが有効になっている単一の ANF ボリュームの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *az_場所* | 弦 | (必須) リソースが存在するサポートされている Azure の場所を指定します。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_プレフィックス* | 弦 | (必須) NetAppボリュームを作成するリソース グループの名前。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_vnet_アドレス空間* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるアドレス空間。 
+
+
+| *az_サブネットアドレスプレフィックス* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるサブネット アドレス プレフィックス。 
+
+
+| *az_ボリューム_パス* | 弦 | (必須) ボリュームの一意のファイル パス。マウント ターゲットを作成するときに使用されます。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_容量プールのサイズ* | 整数 | (必須) 容量プールのサイズ (TB 単位)。 
+
+
+| *az_vnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しい vnet を作成する場合。設定する `false`既存の vnet を使用します。 
+
+
+| *az_subnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しいサブネットを作成します。設定する `false`既存のサブネットを使用します。 
+
+
+| *az_subnet_id_for_anf_vol* | 弦 | (必須) 既存のサブネットを使用する場合は、サブネットIDを指定します。 `subnet_creation_bool`真実に。  false に設定する場合は、デフォルト値のままにします。 
+
+
+| *az_netapp_pool_service_level* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_サービスレベル* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_protocol1* | 弦 | (必須) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_protocol2* | 弦 | (必須) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_storage_quota* | 弦 | (必須) ファイル システムに許可される最大ストレージ クォータ (ギガバイト単位)。 
+
+
+| *az_smb_server_ユーザー名* | 弦 | (必須) ActiveDirectory オブジェクトを作成するためのユーザー名。 
+
+
+| *az_smb_server_パスワード* | 弦 | (必須) ActiveDirectory オブジェクトを作成するためのユーザー パスワード。 
+
+
+| *az_smb_サーバー名* | 弦 | (必須) ActiveDirectory オブジェクトを作成するサーバー名。 
+
+
+| *az_smb_dns_servers* | 弦 | (必須) ActiveDirectory オブジェクトを作成するための DNS サーバー IP。 
+|===
+
+NOTE: 推奨に従って、このスクリプトは `prevent_destroy`ライフサイクル引数を使用すると、構成ファイル内での偶発的なデータ損失の可能性を軽減できます。詳細については、 `prevent_destroy`ライフサイクル引数については、Terraform のドキュメントを参照してください。 https://developer.hashicorp.com/terraform/tutorials/state/resource-lifecycle#prevent-resource-deletion[] 。
+
+--
+.スナップショットからの ANF ボリューム
+--
+.Azure 上のスナップショットから ANF ボリュームを展開するための Terraform 構成ファイル
+このセクションには、Azure 上のスナップショットから ANF (Azure Netapp Files) ボリュームをデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数の値を更新する `vars/azure_anf_volume_from_snapshot.tfvars`。
+
+
+
+NOTE: 変数「vnet_creation_bool」と「subnet_creation_bool」の値を false に設定し、「subnet_id_for_anf_vol」を指定することにより、既存の vnet とサブネットを使用して ANF ボリュームをデプロイすることを選択できます。これらの値を true に設定して新しい vnet とサブネットを作成することもできます。その場合、サブネット ID は新しく作成されたサブネットから自動的に取得されます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.anf_volume_from_snapshot" -var-file="vars/azure_anf_volume_from_snapshot.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.anf_volume_from_snapshot" -var-file="vars/azure_anf_volume_from_snapshot.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`Single Node Instance`
+
+スナップショットを使用した単一の ANF ボリュームの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *az_場所* | 弦 | (必須) リソースが存在するサポートされている Azure の場所を指定します。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_プレフィックス* | 弦 | (必須) NetAppボリュームを作成するリソース グループの名前。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_vnet_アドレス空間* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるアドレス空間。 
+
+
+| *az_サブネットアドレスプレフィックス* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるサブネット アドレス プレフィックス。 
+
+
+| *az_ボリューム_パス* | 弦 | (必須) ボリュームの一意のファイル パス。マウント ターゲットを作成するときに使用されます。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_容量プールのサイズ* | 整数 | (必須) 容量プールのサイズ (TB 単位)。 
+
+
+| *az_vnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しい vnet を作成する場合。設定する `false`既存の vnet を使用します。 
+
+
+| *az_subnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しいサブネットを作成します。設定する `false`既存のサブネットを使用します。 
+
+
+| *az_subnet_id_for_anf_vol* | 弦 | (必須) 既存のサブネットを使用する場合は、サブネットIDを指定します。 `subnet_creation_bool`真実に。  false に設定する場合は、デフォルト値のままにします。 
+
+
+| *az_netapp_pool_service_level* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_サービスレベル* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_プロトコル* | 弦 | (オプション) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_storage_quota* | 弦 | (必須) ファイル システムに許可される最大ストレージ クォータ (ギガバイト単位)。 
+
+
+| *az_スナップショットID* | 弦 | (必須) 新しい ANF ボリュームを作成するときに使用するスナップショット ID。 
+|===
+
+NOTE: 推奨に従って、このスクリプトは `prevent_destroy`ライフサイクル引数を使用すると、構成ファイル内での偶発的なデータ損失の可能性を軽減できます。詳細については、 `prevent_destroy`ライフサイクル引数については、Terraform のドキュメントを参照してください。 https://developer.hashicorp.com/terraform/tutorials/state/resource-lifecycle#prevent-resource-deletion[] 。
+
+--
+.CVO シングルノード展開
+--
+.Azure にシングルノード CVO を展開するための Terraform 構成ファイル
+このセクションには、Azure で Single Node CVO (Cloud Volumes ONTAP) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数を更新する `vars\azure_cvo_single_node_deployment.tfvars`。
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.az_cvo_single_node_deployment" -var-file="vars\azure_cvo_single_node_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.az_cvo_single_node_deployment" -var-file="vars\azure_cvo_single_node_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`Single Node Instance`
+
+単一ノードのCloud Volumes ONTAP (CVO) の Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *リフレッシュトークン* | 弦 | (必須) NetAppクラウド マネージャーの更新トークン。これは、netapp Cloud Central から生成できます。 
+
+
+| *az_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *az_コネクタの場所* | 弦 | (必須) Cloud Manager コネクタが作成される場所。 
+
+
+| *az_コネクタ_サブスクリプション_id* | 弦 | (必須) Azure サブスクリプションの ID。 
+
+
+| *az_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *az_コネクタ_リソース_グループ* | 整数 | (必須) リソースが作成される Azure のリソース グループ。 
+
+
+| *az_connector_subnet_id* | 弦 | (必須) 仮想マシンのサブネットの名前。 
+
+
+| *az_connector_vnet_id* | 弦 | (必須) 仮想ネットワークの名前。 
+
+
+| *az_connector_ネットワーク_セキュリティ_グループ名* | 弦 | (必須) インスタンスのセキュリティ グループの名前。 
+
+
+| *az_connector_associate_public_ip_address* | 弦 | (必須) パブリック IP アドレスを仮想マシンに関連付けるかどうかを示します。 
+
+
+| *az_connector_account_id* | 弦 | (必須) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *az_connector_admin_パスワード* | 弦 | (必須) コネクタのパスワード。 
+
+
+| *az_connector_admin_ユーザー名* | 弦 | (必須) コネクタのユーザー名。 
+
+
+| *az_cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *az_cvo_location* | 弦 | (必須) 作業環境が作成される場所。 
+
+
+| *az_cvo_サブネットID* | 弦 | (必須) Cloud Volumes ONTAPシステムのサブネットの名前。 
+
+
+| *az_cvo_vnet_id* | 弦 | (必須) 仮想ネットワークの名前。 
+
+
+| *az_cvo_vnet_resource_group* | 弦 | (必須) 仮想ネットワークに関連付けられている Azure のリソース グループ。 
+
+
+| *az_cvo_データ暗号化タイプ* | 弦 | (必須) 作業環境で使用する暗号化の種類: `AZURE` 、 `NONE` ]。デフォルトは `AZURE`。 
+
+
+| *az_cvo_ストレージタイプ* | 弦 | (必須) 最初のデータ集約のストレージのタイプ: `Premium_LRS` 、 `Standard_LRS` 、 `StandardSSD_LRS` ]。デフォルトは `Premium_LRS` 
+
+
+| *az_cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *az_cvo_ワークスペースID* | 弦 | （必須） Cloud Volumes ONTAPをデプロイする Cloud Manager ワークスペースの ID。指定されない場合、Cloud Manager は最初のワークスペースを使用します。  IDはワークスペースタブから確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *az_cvo_容量_層* | 弦 | (必須) 最初のデータ集約に対してデータ階層化を有効にするかどうか:[`Blob` 、 `NONE` ]。デフォルトは `BLOB`。 
+
+
+| *az_cvo_writing_speed_state* | 弦 | （必須） Cloud Volumes ONTAPの書き込み速度設定： `NORMAL` 、 `HIGH` ]。デフォルトは `NORMAL`。この引数は HA ペアには関係ありません。 
+
+
+| *az_cvo_ontap_バージョン* | 弦 | (必須) 必要なONTAPバージョン。 'use_latest_version' が true に設定されている場合は無視されます。デフォルトでは最新バージョンが使用されます。 
+
+
+| *az_cvo_インスタンスタイプ* | 弦 | (必須) 使用するインスタンスのタイプ。選択したライセンス タイプによって異なります。[`Standard_DS3_v2` ]、 標準：[`Standard_DS4_v2,Standard_DS13_v2,Standard_L8s_v2` ]、プレミアム：[`Standard_DS5_v2`,`Standard_DS14_v2` ]、BYOL: PayGo に定義されているすべてのインスタンス タイプ。サポートされているその他のインスタンス タイプについては、 Cloud Volumes ONTAPリリース ノートを参照してください。デフォルトは `Standard_DS4_v2`。 
+
+
+| *az_cvo_ライセンスタイプ* | 弦 | (必須) 使用するライセンスの種類。単一ノードの場合:[`azure-cot-explore-paygo` 、 `azure-cot-standard-paygo` 、 `azure-cot-premium-paygo` 、 `azure-cot-premium-byol` 、 `capacity-paygo` ]。 HAの場合:[`azure-ha-cot-standard-paygo` 、 `azure-ha-cot-premium-paygo` 、 `azure-ha-cot-premium-byol` 、 `ha-capacity-paygo` ]。デフォルトは `azure-cot-standard-paygo`。使用 `capacity-paygo`または `ha-capacity-paygo`HA の場合、Bring Your Own License タイプとして容量ベースまたはフリーミアムを選択します。使用 `azure-cot-premium-byol`または `azure-ha-cot-premium-byol`HA の場合は、Bring Your Own License タイプでノードベースを選択します。 
+
+
+| *az_cvo_nss_アカウント* | 弦 | (必須) このCloud Volumes ONTAPシステムで使用するNetAppサポート サイトのアカウント ID。ライセンス タイプが BYOL であり、NSS アカウントが指定されていない場合、Cloud Manager は最初の既存の NSS アカウントを使用しようとします。 
+
+
+| *az_テナントID* | 弦 | (必須) Azure に登録されているアプリケーション/サービス プリンシパルのテナント ID。 
+
+
+| *az_アプリケーションID* | 弦 | (必須) Azure に登録されているアプリケーション/サービス プリンシパルのアプリケーション ID。 
+
+
+| *az_アプリケーションキー* | 弦 | (必須) Azure に登録されたアプリケーション/サービス プリンシパルのアプリケーション キー。 
+|===
+--
+.CVO HA 展開
+--
+.Azure に CVO HA を展開するための Terraform 構成ファイル
+このセクションには、Azure で CVO (Cloud Volumes ONTAP) HA (高可用性) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数を更新する `vars\azure_cvo_ha_deployment.tfvars`。
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.az_cvo_ha_deployment" -var-file="vars\azure_cvo_ha_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.az_cvo_ha_deployment" -var-file="vars\azure_cvo_ha_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`HA Pair Instance`
+
+HA ペアCloud Volumes ONTAP (CVO) の Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *リフレッシュトークン* | 弦 | (必須) NetAppクラウド マネージャーの更新トークン。これは、netapp Cloud Central から生成できます。 
+
+
+| *az_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *az_コネクタの場所* | 弦 | (必須) Cloud Manager コネクタが作成される場所。 
+
+
+| *az_コネクタ_サブスクリプション_id* | 弦 | (必須) Azure サブスクリプションの ID。 
+
+
+| *az_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *az_コネクタ_リソース_グループ* | 整数 | (必須) リソースが作成される Azure のリソース グループ。 
+
+
+| *az_connector_subnet_id* | 弦 | (必須) 仮想マシンのサブネットの名前。 
+
+
+| *az_connector_vnet_id* | 弦 | (必須) 仮想ネットワークの名前。 
+
+
+| *az_connector_ネットワーク_セキュリティ_グループ名* | 弦 | (必須) インスタンスのセキュリティ グループの名前。 
+
+
+| *az_connector_associate_public_ip_address* | 弦 | (必須) パブリック IP アドレスを仮想マシンに関連付けるかどうかを示します。 
+
+
+| *az_connector_account_id* | 弦 | (必須) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *az_connector_admin_パスワード* | 弦 | (必須) コネクタのパスワード。 
+
+
+| *az_connector_admin_ユーザー名* | 弦 | (必須) コネクタのユーザー名。 
+
+
+| *az_cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *az_cvo_location* | 弦 | (必須) 作業環境が作成される場所。 
+
+
+| *az_cvo_サブネットID* | 弦 | (必須) Cloud Volumes ONTAPシステムのサブネットの名前。 
+
+
+| *az_cvo_vnet_id* | 弦 | (必須) 仮想ネットワークの名前。 
+
+
+| *az_cvo_vnet_resource_group* | 弦 | (必須) 仮想ネットワークに関連付けられている Azure のリソース グループ。 
+
+
+| *az_cvo_データ暗号化タイプ* | 弦 | (必須) 作業環境で使用する暗号化の種類: `AZURE` 、 `NONE` ]。デフォルトは `AZURE`。 
+
+
+| *az_cvo_ストレージタイプ* | 弦 | (必須) 最初のデータ集約のストレージのタイプ: `Premium_LRS` 、 `Standard_LRS` 、 `StandardSSD_LRS` ]。デフォルトは `Premium_LRS` 
+
+
+| *az_cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *az_cvo_ワークスペースID* | 弦 | （必須） Cloud Volumes ONTAPをデプロイする Cloud Manager ワークスペースの ID。指定されない場合、Cloud Manager は最初のワークスペースを使用します。  IDはワークスペースタブから確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *az_cvo_容量_層* | 弦 | (必須) 最初のデータ集約に対してデータ階層化を有効にするかどうか:[`Blob` 、 `NONE` ]。デフォルトは `BLOB`。 
+
+
+| *az_cvo_writing_speed_state* | 弦 | （必須） Cloud Volumes ONTAPの書き込み速度設定： `NORMAL` 、 `HIGH` ]。デフォルトは `NORMAL`。この引数は HA ペアには関係ありません。 
+
+
+| *az_cvo_ontap_バージョン* | 弦 | (必須) 必要なONTAPバージョン。 'use_latest_version' が true に設定されている場合は無視されます。デフォルトでは最新バージョンが使用されます。 
+
+
+| *az_cvo_インスタンスタイプ* | 弦 | (必須) 使用するインスタンスのタイプ。選択したライセンス タイプによって異なります。[`Standard_DS3_v2` ]、 標準：[`Standard_DS4_v2, Standard_DS13_v2, Standard_L8s_v2` ]、プレミアム：[`Standard_DS5_v2` 、 `Standard_DS14_v2` ]、BYOL: PayGo に定義されているすべてのインスタンス タイプ。サポートされているその他のインスタンス タイプについては、 Cloud Volumes ONTAPリリース ノートを参照してください。デフォルトは `Standard_DS4_v2`。 
+
+
+| *az_cvo_ライセンスタイプ* | 弦 | (必須) 使用するライセンスの種類。単一ノードの場合:[`azure-cot-explore-paygo, azure-cot-standard-paygo, azure-cot-premium-paygo, azure-cot-premium-byol, capacity-paygo` ]。 HAの場合:[`azure-ha-cot-standard-paygo, azure-ha-cot-premium-paygo, azure-ha-cot-premium-byol, ha-capacity-paygo` ]。デフォルトは `azure-cot-standard-paygo`。使用 `capacity-paygo`または `ha-capacity-paygo`HA の場合、Bring Your Own License タイプとして容量ベースまたはフリーミアムを選択します。使用 `azure-cot-premium-byol`または `azure-ha-cot-premium-byol`HA の場合は、Bring Your Own License タイプでノードベースを選択します。 
+
+
+| *az_cvo_nss_アカウント* | 弦 | (必須) このCloud Volumes ONTAPシステムで使用するNetAppサポート サイトのアカウント ID。ライセンス タイプが BYOL であり、NSS アカウントが指定されていない場合、Cloud Manager は最初の既存の NSS アカウントを使用しようとします。 
+
+
+| *az_テナントID* | 弦 | (必須) Azure に登録されているアプリケーション/サービス プリンシパルのテナント ID。 
+
+
+| *az_アプリケーションID* | 弦 | (必須) Azure に登録されているアプリケーション/サービス プリンシパルのアプリケーション ID。 
+
+
+| *az_アプリケーションキー* | 弦 | (必須) Azure に登録されたアプリケーション/サービス プリンシパルのアプリケーション キー。 
+|===
+--
+=====
+====
+.GCP
+[%collapsible%open]
+====
+[role="tabbed-block"]
+=====
+.CVO シングルノード展開
+--
+.GCP 上のNetApp CVO (シングルノードインスタンス) のデプロイメント用の Terraform 構成ファイル
+このセクションには、GCP (Google Cloud Platform) 上で単一ノードのNetApp CVO (Cloud Volumes ONTAP) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. GCP 認証キーの JSON ファイルをディレクトリに保存します。
+. 変数の値を更新する `vars/gcp_cvo_single_node_deployment.tfvar`
++
+
+NOTE: 変数「gcp_connector_deploy_bool」の値を true/false に設定することで、コネクタをデプロイすることを選択できます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.gco_single_node" -var-file="vars/gcp_cvo_single_node_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.gcp_single_node" -var-file="vars/gcp_cvo_single_node_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`Connector`
+
+CVO デプロイメント用のNetApp GCP コネクタ インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *gcp_connector_deploy_bool* | ブール | (必須) コネクタのデプロイメントを確認します。 
+
+
+| *gcp_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *gcp_connector_プロジェクトID* | 弦 | (必須) コネクタが作成される GCP project_id。 
+
+
+| *gcp_connector_zone* | 弦 | (必須) コネクタが作成される GCP ゾーン。 
+
+
+| *gcp_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *gcp_connector_サービスアカウントのメール* | 弦 | (必須) コネクタ インスタンスの service_account の電子メール。このサービス アカウントは、コネクタが Cloud Volume ONTAPを作成できるようにするために使用されます。 
+
+
+| *gcp_connector_service_account_path* | 弦 | (必須) GCP 認証用の service_account JSON ファイルのローカル パス。このサービス アカウントは、GCP でコネクタを作成するために使用されます。 
+
+
+| *gcp_connector_account_id* | 弦 | (オプション) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+|===
+`Single Node Instance`
+
+GCP 上の単一のNetApp CVO インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *gcp_cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *gcp_cvo_プロジェクトID* | 弦 | (必須) GCP プロジェクトの ID。 
+
+
+| *gcp_cvo_zone* | 弦 | (必須) 作業環境が作成されるリージョンのゾーン。 
+
+
+| *gcp_cvo_gcp_サービスアカウント* | 弦 | （必須）Google Cloud Storage へのコールド データの階層化を有効にするための gcp_service_account のメール。 
+
+
+| *gcp_cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *gcp_cvo_ワークスペースID* | 弦 | （オプション） Cloud Volumes ONTAPをデプロイするCloud ManagerワークスペースのID。指定されない場合、Cloud Manager は最初のワークスペースを使用します。  IDはワークスペースタブから確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *gcp_cvo_ライセンスタイプ* | 弦 | (オプション) 使用するライセンスの種類。単一ノードの場合: ['capacity-paygo'、'gcp-cot-explore-paygo'、'gcp-cot-standard-paygo'、'gcp-cot-premium-paygo'、'gcp-cot-premium-byol']、HA の場合: ['ha-capacity-paygo'、'gcp-ha-cot-explore-paygo'、'gcp-ha-cot-standard-paygo'、'gcp-ha-cot-premium-paygo'、'gcp-ha-cot-premium-byol']。デフォルトは、単一ノードの場合は「capacity-paygo」、HA の場合は「ha-capacity-paygo」です。 
+
+
+| *gcp_cvo_capacity_package_name* | 弦 | (オプション) 容量パッケージ名: ['Essential', 'Professional', 'Freemium']。デフォルトは「必須」です。 
+|===
+--
+.CVO HA 展開
+--
+.GCP 上のNetApp CVO (HA ペア) のデプロイメント用の Terraform 構成ファイル
+このセクションには、GCP (Google Cloud Platform) 上の高可用性ペアでNetApp CVO (Cloud Volumes ONTAP) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. GCP 認証キーの JSON ファイルをディレクトリに保存します。
+. 変数の値を更新する `vars/gcp_cvo_ha_deployment.tfvars`。
++
+
+NOTE: 変数「gcp_connector_deploy_bool」の値を true/false に設定することで、コネクタをデプロイすることを選択できます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+      terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.gcp_ha" -var-file="vars/gcp_cvo_ha_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.gcp_ha" -var-file="vars/gcp_cvo_ha_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`Connector`
+
+CVO デプロイメント用のNetApp GCP コネクタ インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *gcp_connector_deploy_bool* | ブール | (必須) コネクタのデプロイメントを確認します。 
+
+
+| *gcp_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *gcp_connector_プロジェクトID* | 弦 | (必須) コネクタが作成される GCP project_id。 
+
+
+| *gcp_connector_zone* | 弦 | (必須) コネクタが作成される GCP ゾーン。 
+
+
+| *gcp_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *gcp_connector_サービスアカウントのメール* | 弦 | (必須) コネクタ インスタンスの service_account の電子メール。このサービス アカウントは、コネクタが Cloud Volume ONTAPを作成できるようにするために使用されます。 
+
+
+| *gcp_connector_service_account_path* | 弦 | (必須) GCP 認証用の service_account JSON ファイルのローカル パス。このサービス アカウントは、GCP でコネクタを作成するために使用されます。 
+
+
+| *gcp_connector_account_id* | 弦 | (オプション) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+|===
+`HA Pair`
+
+GCP 上の HA ペアのNetApp CVO インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *gcp_cvo_is_ha* | ブール | (オプション) 作業環境が HA ペアであるかどうかを示します [true、false]。デフォルトはfalseです。 
+
+
+| *gcp_cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *gcp_cvo_プロジェクトID* | 弦 | (必須) GCP プロジェクトの ID。 
+
+
+| *gcp_cvo_zone* | 弦 | (必須) 作業環境が作成されるリージョンのゾーン。 
+
+
+| *gcp_cvo_node1_ゾーン* | 弦 | (オプション) ノード 1 のゾーン。 
+
+
+| *gcp_cvo_node2_ゾーン* | 弦 | (オプション) ノード 2 のゾーン。 
+
+
+| *gcp_cvo_mediator_zone* | 弦 | (オプション) メディエーターのゾーン。 
+
+
+| *gcp_cvo_vpc_id* | 弦 | (オプション) VPC の名前。 
+
+
+| *gcp_cvo_サブネットID* | 弦 | （オプション） Cloud Volumes ONTAPのサブネットの名前。デフォルトは「default」です。 
+
+
+| *gcp_cvo_vpc0_ノードとデータ接続* | 弦 | (オプション) ノードとデータの接続に必要な、nic1 の VPC パス。共有 VPC を使用する場合は、netwrok_project_id を指定する必要があります。 
+
+
+| *gcp_cvo_vpc1_クラスター接続* | 弦 | (オプション) クラスター接続に必要な、nic2 の VPC パス。 
+
+
+| *gcp_cvo_vpc2_ha_接続性* | 弦 | (オプション) HA 接続に必要な、nic3 の VPC パス。 
+
+
+| *gcp_cvo_vpc3_データレプリケーション* | 弦 | (オプション) データレプリケーションに必要な、nic4 の VPC パス。 
+
+
+| *gcp_cvo_subnet0_ノードとデータ接続* | 弦 | (オプション) ノードとデータの接続に必要な、nic1 のサブネット パス。共有 VPC を使用する場合は、netwrok_project_id を指定する必要があります。 
+
+
+| *gcp_cvo_subnet1_cluster_connectivity* | 弦 | (オプション) クラスター接続に必要な、nic2 のサブネット パス。 
+
+
+| *gcp_cvo_subnet2_ha_connectivity* | 弦 | (オプション) HA 接続に必要な、nic3 のサブネット パス。 
+
+
+| *gcp_cvo_subnet3_データレプリケーション* | 弦 | (オプション) データ複製に必要な、nic4 のサブネット パス。 
+
+
+| *gcp_cvo_gcp_サービスアカウント* | 弦 | （必須）Google Cloud Storage へのコールド データの階層化を有効にするための gcp_service_account のメール。 
+
+
+| *gcp_cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *gcp_cvo_ワークスペースID* | 弦 | （オプション） Cloud Volumes ONTAPをデプロイするCloud ManagerワークスペースのID。指定されない場合、Cloud Manager は最初のワークスペースを使用します。  IDはワークスペースタブから確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *gcp_cvo_ライセンスタイプ* | 弦 | (オプション) 使用するライセンスの種類。単一ノードの場合: ['capacity-paygo'、'gcp-cot-explore-paygo'、'gcp-cot-standard-paygo'、'gcp-cot-premium-paygo'、'gcp-cot-premium-byol']、HA の場合: ['ha-capacity-paygo'、'gcp-ha-cot-explore-paygo'、'gcp-ha-cot-standard-paygo'、'gcp-ha-cot-premium-paygo'、'gcp-ha-cot-premium-byol']。デフォルトは、単一ノードの場合は「capacity-paygo」、HA の場合は「ha-capacity-paygo」です。 
+
+
+| *gcp_cvo_capacity_package_name* | 弦 | (オプション) 容量パッケージ名: ['Essential', 'Professional', 'Freemium']。デフォルトは「必須」です。 
+
+
+| *gcp_cvo_gcp_ボリュームサイズ* | 弦 | (オプション) 最初のデータ集約の GCP ボリューム サイズ。  GB の場合、単位は [100 または 500] になります。 TBの場合、単位は[1,2,4,8]になります。デフォルトは '1' です。 
+
+
+| *gcp_cvo_gcp_ボリュームサイズ単位* | 弦 | (オプション) ['GB' または 'TB']。デフォルトは「TB」です。 
+|===
+--
+.NetAppボリュームボリューム
+--
+.GCP 上のNetApp Volumes のデプロイメント用の Terraform 構成ファイル
+このセクションには、GCP (Google Cloud Platform) 上でNetApp Volumes (Google Cloud NetApp Volumes) ボリュームをデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-gcp/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. GCP 認証キーの JSON ファイルをディレクトリに保存します。
+. 変数の値を更新する `vars/gcp_cvs_volume.tfvars`。
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+      terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.gcp_cvs_volume" -var-file="vars/gcp_cvs_volume.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.gcp_cvs_volume" -var-file="vars/gcp_cvs_volume.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`NetApp Volumes Volume`
+
+NetApp GCP NetApp Volumes の Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *gcp_cvs_name* | 弦 | (必須) NetApp Volumes ボリュームの名前。 
+
+
+| *gcp_cvs_プロジェクトID* | 弦 | (必須) NetApp Volumes ボリュームが作成される GCP project_id。 
+
+
+| *gcp_cvs_gcp_サービスアカウントパス* | 弦 | (必須) GCP 認証用の service_account JSON ファイルのローカル パス。このサービス アカウントは、GCP でNetApp Volumes ボリュームを作成するために使用されます。 
+
+
+| *gcp_cvs_region* | 弦 | (必須) NetApp Volumes ボリュームが作成される GCP ゾーン。 
+
+
+| *gcp_cvs_network* | 弦 | (必須) ボリュームのネットワーク VPC。 
+
+
+| *gcp_cvs_size* | 整数 | (必須) ボリュームのサイズは 1024 から 102400 (GiB 単位) までです。 
+
+
+| *gcp_cvs_ボリュームパス* | 弦 | (オプション) ボリュームのボリューム パスの名前。 
+
+
+| *gcp_cvs_プロトコルタイプ* | 弦 | (必須) ボリュームの protocol_type。  NFS の場合は「NFSv3」または「NFSv4」を使用し、SMB の場合は「CIFS」または「SMB」を使用します。 
+|===
+--
+=====
+====

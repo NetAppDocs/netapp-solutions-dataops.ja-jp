@@ -1,0 +1,14 @@
+---
+section: automation
+title: ソリューション自動化
+entries:
+- title: はじめに
+  url: "/automation/automation-introduction.html"
+- title: 自動化環境を設定する
+  url: "/automation/getting-started.html"
+- title: CVO およびコネクタの展開の前提条件を収集する
+  url: "/automation/authentication-tokens.html"
+- title: Terraform を使用した Cloud Volumes の自動化
+  url: "/automation/cloud-volumes-terraform.html"
+- title: AWS Lambda 関数を使用したAmazon FSx for NetApp ONTAP の監視と自動サイズ変更
+  url: "/automation/fsxn-monitoring-resizing.html"

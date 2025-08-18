@@ -1,0 +1,19 @@
+---
+sidebar: sidebar 
+permalink: xcp/xcp-bp-introduction.html 
+keywords: tr-4863, 4863, tr4863, xcp, best practices, data mover, migration 
+summary: このドキュメントでは、 NetApp XCP のベスト プラクティス ガイドラインとテスト シナリオ ベースのソリューションを提供します。これらのベスト プラクティスでは、オンプレミスとクラウドの移行ワークフロー、ファイル システム分析、トラブルシューティング、XCP のパフォーマンス チューニングについて説明します。 
+---
+= TR-4863: NetApp XCP - データムーバー、ファイル移行、分析のベストプラクティスガイドライン
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+カーティケヤン ナガリンガム、NetApp
+
+[role="lead"]
+このドキュメントでは、 NetApp XCP のベスト プラクティス ガイドラインとテスト シナリオ ベースのソリューションを提供します。これらのベスト プラクティスでは、オンプレミスとクラウドの移行ワークフロー、ファイル システム分析、トラブルシューティング、XCP のパフォーマンス チューニングについて説明します。テスト シナリオ セクションでは、顧客のユース ケースとその要件、XCP を使用したNetAppソリューション、顧客にとっての利点について説明します。

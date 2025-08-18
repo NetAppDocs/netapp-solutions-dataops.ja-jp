@@ -1,0 +1,22 @@
+---
+sidebar: sidebar 
+permalink: cyber-vault/ontap-cyber-vault-ps-conclusion.html 
+keywords: Cyber vault, powershell, script, configuration, validation, hardening 
+summary: これは、 ONTAPベースのサイバーボールトを構成、強化、検証するためのNetApp ONTAPソリューションです。 
+---
+= ONTAPサイバーボルト PowerShell ソリューションの結論
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+NetApp は、 ONTAPが提供する強力な強化手法によるエアギャップを活用することで、進化するサイバー脅威に耐性のある、安全で分離されたストレージ環境の構築を可能にします。これらすべては、既存のストレージ インフラストラクチャの俊敏性と効率性を維持しながら実現されます。この安全なアクセスにより、企業は既存の人材、プロセス、テクノロジー フレームワークへの変更を最小限に抑えながら、厳格な安全性と稼働時間の目標を達成できるようになります。
+
+ONTAPサイバー ボールトはONTAPのネイティブ機能を使用して、データの変更不可能で消去不可能なコピーを作成することで、追加の保護を実現する簡単な方法です。  NetApp のONTAPベースのサイバー ボールトを全体的なセキュリティ体制に追加すると、次のことが可能になります。
+
+* 運用ネットワークとバックアップ ネットワークから分離され切断された環境を作成し、ユーザー アクセスを制限します。
+

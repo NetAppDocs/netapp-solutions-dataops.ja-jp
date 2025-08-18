@@ -1,0 +1,42 @@
+---
+sidebar: sidebar 
+permalink: xcp/xcp-bp-data-lake-to-ontap-nfs.html 
+keywords: requirements, proof of concept, AI, data mover, mapr 
+summary: 'このユースケースは、当社が実施した最大規模の金融顧客概念実証 (CPOC) に基づいています。これまで、分析データをNetApp ONTAP AI に移動するために、 NetApp In-Place Analytics Module (NIPAM) を使用していました。しかし、 NetApp XCP の最近の機能強化とパフォーマンスの向上、および独自のNetAppデータ ムーバー ソリューション アプローチにより、 NetApp XCP を使用してデータ移行を再実行しました。' 
+---
+= データレイクからONTAP NFSへ
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+このユースケースは、当社が実施した最大規模の金融顧客概念実証 (CPOC) に基づいています。これまで、分析データをNetApp ONTAP AI に移動するために、 NetApp In-Place Analytics Module (NIPAM) を使用していました。しかし、 NetApp XCP の最近の機能強化とパフォーマンスの向上、および独自のNetAppデータ ムーバー ソリューション アプローチにより、 NetApp XCP を使用してデータ移行を再実行しました。
+
+
+
+== 顧客の課題と要件
+
+注目すべき顧客の課題と要件は次のとおりです。
+
+* お客様は、データ レイク内に構造化データ、非構造化データ、半構造化データ、ログ、マシン間データなど、さまざまな種類のデータを保有しています。 AI システムでは、予測操作のためにこれらすべての種類のデータを処理する必要があります。データがデータレイクのネイティブ ファイル システム内にある場合、処理が困難になります。
+* お客様の AI アーキテクチャは、Hadoop 分散ファイル システム (HDFS) および Hadoop 互換ファイル システム (HCFS) のデータにアクセスできないため、そのデータを AI 操作で利用できません。  AI には、NFS などの理解可能なファイル システム形式のデータが必要です。
+* データ量が多く、スループットが高いため、データレイクからデータを移動するには特別なプロセスが必要であり、データを AI システムに移動するコスト効率の高い方法が必要です。
+
+
+
+
+== データムーバーソリューション
+
+このソリューションでは、MapR クラスター内のローカル ディスクから MapR ファイル システム (MapR-FS) が作成されます。 MapR NFS ゲートウェイは、各データ ノードに仮想 IP で構成されます。ファイル サーバー サービスは、MapR-FS データを保存および管理します。  NFS ゲートウェイは、仮想 IP を介して NFS クライアントから Map-FS データにアクセスできるようにします。 XCP インスタンスは各 MapR データ ノードで実行され、Map NFS ゲートウェイからNetApp ONTAP NFS にデータを転送します。各 XCP インスタンスは、特定のソース フォルダー セットを宛先の場所に転送します。
+
+次の図は、XCP を使用した MapR クラスタ用のNetAppデータ ムーバー ソリューションを示しています。
+
+image:xcp-bp-030.png["入出力ダイアログまたは書かれたコンテンツを示す図"]
+
+詳細な顧客の使用事例、録画されたデモ、テスト結果については、link:https://blog.netapp.com/data-migration-xcp["XCP を使用してデータレイクとハイパフォーマンスコンピューティングからONTAP NFS にデータを移動する"^]ブログ。
+
+NetApp XCPを使用してMapR-FSデータをONTAP NFSに移動する詳細な手順については、付録Bを参照してください。link:https://docs.netapp.com/us-en/netapp-solutions-ai/data-analytics/bda-ai-introduction.html["TR-4732: ビッグデータ分析データから人工知能へ^"^] 。

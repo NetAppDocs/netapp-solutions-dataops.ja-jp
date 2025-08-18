@@ -1,0 +1,29 @@
+---
+sidebar: sidebar 
+permalink: whats-new.html 
+keywords: 'netapp, solutions, data management, what"s new, updates, change log' 
+summary: NetAppデータ管理ソリューション関連資料の最近の変更のログ。 
+---
+= NetAppデータ管理ソリューションの新機能
+:allow-uri-read: 
+:icons: font
+:imagesdir: ./media/
+
+
+[role="lead"]
+データ管理ソリューションの新機能について学びます。
+
+
+
+== 2025年8月18日
+
+NetAppソリューションサイトは、link:https://docs.netapp.com/us-en/netapp-solutions-family/index.html["NetAppソリューションファミリー"^]これには次のサイトが含まれます。
+
+* link:https://docs.netapp.com/us-en/netapp-solutions-ai/index.html["NetAppの人工知能ソリューション"^]
+* link:https://docs.netapp.com/us-en/netapp-solutions-containers/index.html["NetAppコンテナソリューション"^]
+* NetAppデータ管理ソリューション
+* link:https://docs.netapp.com/us-en/netapp-solutions-databases/index.html["NetAppデータベースソリューション"^]
+* link:https://docs.netapp.com/us-en/netapp-solutions-cloud/index.html["NetAppパブリックおよびハイブリッド クラウド ソリューション"^]
+* link:https://docs.netapp.com/us-en/netapp-solutions-sap/index.html["SAP向けNetAppソリューション"^]
+* link:https://docs.netapp.com/us-en/netapp-solutions-virtualization/index.html["NetApp仮想化ソリューション"^]
+

@@ -1,0 +1,397 @@
+= 
+:allow-uri-read: 
+
+
+[role="tabbed-block"]
+====
+.CVO シングルノード展開
+--
+.GCP 上のNetApp CVO (シングルノードインスタンス) のデプロイメント用の Terraform 構成ファイル
+このセクションには、GCP (Google Cloud Platform) 上で単一ノードのNetApp CVO (Cloud Volumes ONTAP) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. GCP 認証キーの JSON ファイルをディレクトリに保存します。
+. 変数の値を更新する `vars/gcp_cvo_single_node_deployment.tfvar`
++
+
+NOTE: 変数「gcp_connector_deploy_bool」の値を true/false に設定することで、コネクタをデプロイすることを選択できます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.gco_single_node" -var-file="vars/gcp_cvo_single_node_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.gcp_single_node" -var-file="vars/gcp_cvo_single_node_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`Connector`
+
+CVO デプロイメント用のNetApp GCP コネクタ インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *gcp_connector_deploy_bool* | ブール | (必須) コネクタのデプロイメントを確認します。 
+
+
+| *gcp_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *gcp_connector_プロジェクトID* | 弦 | (必須) コネクタが作成される GCP project_id。 
+
+
+| *gcp_connector_zone* | 弦 | (必須) コネクタが作成される GCP ゾーン。 
+
+
+| *gcp_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *gcp_connector_サービスアカウントのメール* | 弦 | (必須) コネクタ インスタンスの service_account の電子メール。このサービス アカウントは、コネクタが Cloud Volume ONTAPを作成できるようにするために使用されます。 
+
+
+| *gcp_connector_service_account_path* | 弦 | (必須) GCP 認証用の service_account JSON ファイルのローカル パス。このサービス アカウントは、GCP でコネクタを作成するために使用されます。 
+
+
+| *gcp_connector_account_id* | 弦 | (オプション) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+|===
+`Single Node Instance`
+
+GCP 上の単一のNetApp CVO インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *gcp_cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *gcp_cvo_プロジェクトID* | 弦 | (必須) GCP プロジェクトの ID。 
+
+
+| *gcp_cvo_zone* | 弦 | (必須) 作業環境が作成されるリージョンのゾーン。 
+
+
+| *gcp_cvo_gcp_サービスアカウント* | 弦 | （必須）Google Cloud Storage へのコールド データの階層化を有効にするための gcp_service_account のメール。 
+
+
+| *gcp_cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *gcp_cvo_ワークスペースID* | 弦 | （オプション） Cloud Volumes ONTAPをデプロイするCloud ManagerワークスペースのID。指定されない場合、Cloud Manager は最初のワークスペースを使用します。  IDはワークスペースタブから確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *gcp_cvo_ライセンスタイプ* | 弦 | (オプション) 使用するライセンスの種類。単一ノードの場合: ['capacity-paygo'、'gcp-cot-explore-paygo'、'gcp-cot-standard-paygo'、'gcp-cot-premium-paygo'、'gcp-cot-premium-byol']、HA の場合: ['ha-capacity-paygo'、'gcp-ha-cot-explore-paygo'、'gcp-ha-cot-standard-paygo'、'gcp-ha-cot-premium-paygo'、'gcp-ha-cot-premium-byol']。デフォルトは、単一ノードの場合は「capacity-paygo」、HA の場合は「ha-capacity-paygo」です。 
+
+
+| *gcp_cvo_capacity_package_name* | 弦 | (オプション) 容量パッケージ名: ['Essential', 'Professional', 'Freemium']。デフォルトは「必須」です。 
+|===
+--
+.CVO HA 展開
+--
+.GCP 上のNetApp CVO (HA ペア) のデプロイメント用の Terraform 構成ファイル
+このセクションには、GCP (Google Cloud Platform) 上の高可用性ペアでNetApp CVO (Cloud Volumes ONTAP) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. GCP 認証キーの JSON ファイルをディレクトリに保存します。
+. 変数の値を更新する `vars/gcp_cvo_ha_deployment.tfvars`。
++
+
+NOTE: 変数「gcp_connector_deploy_bool」の値を true/false に設定することで、コネクタをデプロイすることを選択できます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+      terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.gcp_ha" -var-file="vars/gcp_cvo_ha_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.gcp_ha" -var-file="vars/gcp_cvo_ha_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`Connector`
+
+CVO デプロイメント用のNetApp GCP コネクタ インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *gcp_connector_deploy_bool* | ブール | (必須) コネクタのデプロイメントを確認します。 
+
+
+| *gcp_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *gcp_connector_プロジェクトID* | 弦 | (必須) コネクタが作成される GCP project_id。 
+
+
+| *gcp_connector_zone* | 弦 | (必須) コネクタが作成される GCP ゾーン。 
+
+
+| *gcp_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *gcp_connector_サービスアカウントのメール* | 弦 | (必須) コネクタ インスタンスの service_account の電子メール。このサービス アカウントは、コネクタが Cloud Volume ONTAPを作成できるようにするために使用されます。 
+
+
+| *gcp_connector_service_account_path* | 弦 | (必須) GCP 認証用の service_account JSON ファイルのローカル パス。このサービス アカウントは、GCP でコネクタを作成するために使用されます。 
+
+
+| *gcp_connector_account_id* | 弦 | (オプション) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+|===
+`HA Pair`
+
+GCP 上の HA ペアのNetApp CVO インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *gcp_cvo_is_ha* | ブール | (オプション) 作業環境が HA ペアであるかどうかを示します [true、false]。デフォルトはfalseです。 
+
+
+| *gcp_cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *gcp_cvo_プロジェクトID* | 弦 | (必須) GCP プロジェクトの ID。 
+
+
+| *gcp_cvo_zone* | 弦 | (必須) 作業環境が作成されるリージョンのゾーン。 
+
+
+| *gcp_cvo_node1_ゾーン* | 弦 | (オプション) ノード 1 のゾーン。 
+
+
+| *gcp_cvo_node2_ゾーン* | 弦 | (オプション) ノード 2 のゾーン。 
+
+
+| *gcp_cvo_mediator_zone* | 弦 | (オプション) メディエーターのゾーン。 
+
+
+| *gcp_cvo_vpc_id* | 弦 | (オプション) VPC の名前。 
+
+
+| *gcp_cvo_サブネットID* | 弦 | （オプション） Cloud Volumes ONTAPのサブネットの名前。デフォルトは「default」です。 
+
+
+| *gcp_cvo_vpc0_ノードとデータ接続* | 弦 | (オプション) ノードとデータの接続に必要な、nic1 の VPC パス。共有 VPC を使用する場合は、netwrok_project_id を指定する必要があります。 
+
+
+| *gcp_cvo_vpc1_クラスター接続* | 弦 | (オプション) クラスター接続に必要な、nic2 の VPC パス。 
+
+
+| *gcp_cvo_vpc2_ha_接続性* | 弦 | (オプション) HA 接続に必要な、nic3 の VPC パス。 
+
+
+| *gcp_cvo_vpc3_データレプリケーション* | 弦 | (オプション) データレプリケーションに必要な、nic4 の VPC パス。 
+
+
+| *gcp_cvo_subnet0_ノードとデータ接続* | 弦 | (オプション) ノードとデータの接続に必要な、nic1 のサブネット パス。共有 VPC を使用する場合は、netwrok_project_id を指定する必要があります。 
+
+
+| *gcp_cvo_subnet1_cluster_connectivity* | 弦 | (オプション) クラスター接続に必要な、nic2 のサブネット パス。 
+
+
+| *gcp_cvo_subnet2_ha_connectivity* | 弦 | (オプション) HA 接続に必要な、nic3 のサブネット パス。 
+
+
+| *gcp_cvo_subnet3_データレプリケーション* | 弦 | (オプション) データ複製に必要な、nic4 のサブネット パス。 
+
+
+| *gcp_cvo_gcp_サービスアカウント* | 弦 | （必須）Google Cloud Storage へのコールド データの階層化を有効にするための gcp_service_account のメール。 
+
+
+| *gcp_cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *gcp_cvo_ワークスペースID* | 弦 | （オプション） Cloud Volumes ONTAPをデプロイするCloud ManagerワークスペースのID。指定されない場合、Cloud Manager は最初のワークスペースを使用します。  IDはワークスペースタブから確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *gcp_cvo_ライセンスタイプ* | 弦 | (オプション) 使用するライセンスの種類。単一ノードの場合: ['capacity-paygo'、'gcp-cot-explore-paygo'、'gcp-cot-standard-paygo'、'gcp-cot-premium-paygo'、'gcp-cot-premium-byol']、HA の場合: ['ha-capacity-paygo'、'gcp-ha-cot-explore-paygo'、'gcp-ha-cot-standard-paygo'、'gcp-ha-cot-premium-paygo'、'gcp-ha-cot-premium-byol']。デフォルトは、単一ノードの場合は「capacity-paygo」、HA の場合は「ha-capacity-paygo」です。 
+
+
+| *gcp_cvo_capacity_package_name* | 弦 | (オプション) 容量パッケージ名: ['Essential', 'Professional', 'Freemium']。デフォルトは「必須」です。 
+
+
+| *gcp_cvo_gcp_ボリュームサイズ* | 弦 | (オプション) 最初のデータ集約の GCP ボリューム サイズ。  GB の場合、単位は [100 または 500] になります。 TBの場合、単位は[1,2,4,8]になります。デフォルトは '1' です。 
+
+
+| *gcp_cvo_gcp_ボリュームサイズ単位* | 弦 | (オプション) ['GB' または 'TB']。デフォルトは「TB」です。 
+|===
+--
+.NetAppボリュームボリューム
+--
+.GCP 上のNetApp Volumes のデプロイメント用の Terraform 構成ファイル
+このセクションには、GCP (Google Cloud Platform) 上でNetApp Volumes (Google Cloud NetApp Volumes) ボリュームをデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-gcp/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. GCP 認証キーの JSON ファイルをディレクトリに保存します。
+. 変数の値を更新する `vars/gcp_cvs_volume.tfvars`。
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+      terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.gcp_cvs_volume" -var-file="vars/gcp_cvs_volume.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.gcp_cvs_volume" -var-file="vars/gcp_cvs_volume.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`NetApp Volumes Volume`
+
+NetApp GCP NetApp Volumes の Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *gcp_cvs_name* | 弦 | (必須) NetApp Volumes ボリュームの名前。 
+
+
+| *gcp_cvs_プロジェクトID* | 弦 | (必須) NetApp Volumes ボリュームが作成される GCP project_id。 
+
+
+| *gcp_cvs_gcp_サービスアカウントパス* | 弦 | (必須) GCP 認証用の service_account JSON ファイルのローカル パス。このサービス アカウントは、GCP でNetApp Volumes ボリュームを作成するために使用されます。 
+
+
+| *gcp_cvs_region* | 弦 | (必須) NetApp Volumes ボリュームが作成される GCP ゾーン。 
+
+
+| *gcp_cvs_network* | 弦 | (必須) ボリュームのネットワーク VPC。 
+
+
+| *gcp_cvs_size* | 整数 | (必須) ボリュームのサイズは 1024 から 102400 (GiB 単位) までです。 
+
+
+| *gcp_cvs_ボリュームパス* | 弦 | (オプション) ボリュームのボリューム パスの名前。 
+
+
+| *gcp_cvs_プロトコルタイプ* | 弦 | (必須) ボリュームの protocol_type。  NFS の場合は「NFSv3」または「NFSv4」を使用し、SMB の場合は「CIFS」または「SMB」を使用します。 
+|===
+--
+====

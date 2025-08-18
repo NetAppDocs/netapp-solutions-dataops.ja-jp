@@ -1,0 +1,23 @@
+---
+sidebar: sidebar 
+permalink: xcp/xcp-bp-small-files.html 
+keywords: on-premises, cloud, migration, small files 
+summary: このユースケースは、 NetApp の最大の観光業界の顧客が何百万もの小さなオンプレミス ファイルをクラウドに移行するというケースに基づいています。 
+---
+= XCP Data Moverを使用して数百万の小さなファイルを柔軟なストレージに移行する
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+このユースケースは、オンプレミスからクラウドへのデータ移行を行う、 NetApp観光業界最大の顧客に基づいています。 COVID-19 の影響で旅行業界の需要が減少したため、お客様はオンデマンド価格設定アプリケーションのためにオンプレミス環境のハイエンド ストレージにかかる資本支出を節約したいと考えています。この顧客には、何百万もの小さなファイルをクラウドに移行するための厳しい SLA があります。
+
+次の図は、オンプレミスからAzure NetApp Filesへの小さなファイルのデータ移行を示しています。
+
+image:xcp-bp-031.png["入出力ダイアログまたは書かれたコンテンツを示す図"]
+
+詳細については、 https://blog.netapp.com/XCP-cloud-data-migration["NetApp XCP Data Moverソリューション：オンプレミスからクラウドへ"^]ブログ。

@@ -1,0 +1,75 @@
+---
+sidebar: sidebar 
+permalink: cyber-vault/ontap-cyber-vault-ps-script.html 
+keywords: Cyber vault, powershell, script, configuration, validation, hardening 
+summary: これは、 ONTAPベースのサイバーボールトを構成、強化、検証するためのNetApp ONTAPソリューションです。 
+---
+= 設定、分析、cronスクリプト
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+NetAppは、link:https://github.com/NetApp/ransomeware-cybervault-automation["ダウンロード可能な単一のスクリプト"^]サイバー ボールト関係を構成、検証、およびスケジュールするために使用されます。
+
+
+
+== このスクリプトが行うこと
+
+* クラスタ ピアリング
+* SVMピアリング
+* DPボリュームの作成
+* SnapMirror関係と初期化
+* サイバーボールトに使用されるONTAPシステムを強化する
+* 転送スケジュールに基づいて関係を休止および再開する
+* セキュリティ設定を定期的に検証し、異常を示すレポートを生成する
+
+
+
+
+== このスクリプトの使い方
+
+link:https://github.com/NetApp/ransomeware-cybervault-automation["スクリプトをダウンロードする"^]スクリプトを使用するには、以下の手順に従ってください。
+
+* Windows PowerShell を管理者として起動します。
+* スクリプトが含まれているディレクトリに移動します。
+* スクリプトを実行するには `.\`必要なパラメータを含む構文
+
+
+
+NOTE: すべての情報が入力されていることを確認してください。最初の実行時 (構成モード) には、本番環境と新しいサイバー ボールト システムの両方の資格情報が求められます。その後、SVM ピアリング (存在しない場合)、ボリューム、およびシステム間のSnapMirrorが作成され、初期化されます。
+
+
+NOTE: Cron モードを使用すると、データ転送の停止と再開をスケジュールできます。
+
+
+
+== 動作モード
+
+自動化スクリプトは3つの実行モードを提供します - `configure` 、 `analyze`そして `cron`。
+
+[source, powershell]
+----
+if($SCRIPT_MODE -eq "configure") {
+        configure
+    } elseif ($SCRIPT_MODE -eq "analyze") {
+        analyze
+    } elseif ($SCRIPT_MODE -eq "cron") {
+        runCron
+    }
+----
+* 構成 - 検証チェックを実行し、システムをエアギャップとして構成します。
+* 分析 - 異常や疑わしいアクティビティに関する情報を監視グループに送信し、構成が変更されないようにする自動監視およびレポート機能。
+* Cron - 切断されたインフラストラクチャを有効にするために、cron モードは LIF の無効化を自動化し、転送関係を静止します。
+
+
+システムのパフォーマンスとデータの量に応じて、選択したボリューム内のデータの転送に時間がかかります。
+
+[source, powershell]
+----
+./script.ps1 -SOURCE_ONTAP_CLUSTER_MGMT_IP "172.21.166.157" -SOURCE_ONTAP_CLUSTER_NAME "NTAP915_Src" -SOURCE_VSERVER "svm_NFS" -SOURCE_VOLUME_NAME "Src_RP_Vol01" -DESTINATION_ONTAP_CLUSTER_MGMT_IP "172.21.166.159" -DESTINATION_ONTAP_CLUSTER_NAME "NTAP915_Destn" -DESTINATION_VSERVER "svm_nim_nfs" -DESTINATION_AGGREGATE_NAME "NTAP915_Destn_01_VM_DISK_1" -DESTINATION_VOLUME_NAME "Dst_RP_Vol01_Vault" -DESTINATION_VOLUME_SIZE "5g" -SNAPLOCK_MIN_RETENTION "15minutes" -SNAPLOCK_MAX_RETENTION "30minutes" -SNAPMIRROR_PROTECTION_POLICY "XDPDefault" -SNAPMIRROR_SCHEDULE "5min" -DESTINATION_CLUSTER_USERNAME "admin" -DESTINATION_CLUSTER_PASSWORD "PASSWORD123"
+----

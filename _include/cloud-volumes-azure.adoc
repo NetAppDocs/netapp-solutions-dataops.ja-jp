@@ -1,0 +1,864 @@
+= 
+:allow-uri-read: 
+
+
+[role="tabbed-block"]
+====
+.ANF
+--
+.Azure に ANF ボリュームを展開するための Terraform 構成ファイル
+このセクションには、Azure で ANF (Azure Netapp Files) ボリュームをデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数の値を更新する `vars/azure_anf.tfvars`。
++
+
+NOTE: 変数「vnet_creation_bool」と「subnet_creation_bool」の値を false に設定し、「subnet_id_for_anf_vol」を指定することにより、既存の vnet とサブネットを使用して ANF ボリュームをデプロイすることを選択できます。これらの値を true に設定して新しい vnet とサブネットを作成することもできます。その場合、サブネット ID は新しく作成されたサブネットから自動的に取得されます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.anf" -var-file="vars/azure_anf.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.anf" -var-file="vars/azure_anf.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`Single Node Instance`
+
+単一のNetApp ANF ボリュームの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *az_場所* | 弦 | (必須) リソースが存在するサポートされている Azure の場所を指定します。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_プレフィックス* | 弦 | (必須) NetAppボリュームを作成するリソース グループの名前。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_vnet_アドレス空間* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるアドレス空間。 
+
+
+| *az_サブネットアドレスプレフィックス* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるサブネット アドレス プレフィックス。 
+
+
+| *az_ボリューム_パス* | 弦 | (必須) ボリュームの一意のファイル パス。マウント ターゲットを作成するときに使用されます。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_容量プールのサイズ* | 整数 | (必須) 容量プールのサイズ (TB 単位)。 
+
+
+| *az_vnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しい vnet を作成する場合。設定する `false`既存の vnet を使用します。 
+
+
+| *az_subnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しいサブネットを作成します。設定する `false`既存のサブネットを使用します。 
+
+
+| *az_subnet_id_for_anf_vol* | 弦 | (必須) 既存のサブネットを使用する場合は、サブネットIDを指定します。 `subnet_creation_bool`真実に。  false に設定する場合は、デフォルト値のままにします。 
+
+
+| *az_netapp_pool_service_level* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_サービスレベル* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_プロトコル* | 弦 | (オプション) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_security_style* | 弦 | (オプション) ボリュームのセキュリティスタイル。許容値は次のとおりです。 `Unix`または `Ntfs`。指定しない場合は、デフォルトでシングルプロトコルボリュームが作成されます。 `Unix`もしそうなら `NFSv3`または `NFSv4.1`ボリューム、もし `CIFS`、デフォルトは `Ntfs`。デュアルプロトコルボリュームでは、指定しない場合は、その値は `Ntfs`。 
+
+
+| *az_netapp_vol_storage_quota* | 弦 | (必須) ファイル システムに許可される最大ストレージ クォータ (ギガバイト単位)。 
+|===
+
+NOTE: 推奨に従って、このスクリプトは `prevent_destroy`ライフサイクル引数を使用すると、構成ファイル内での偶発的なデータ損失の可能性を軽減できます。詳細については、 `prevent_destroy`ライフサイクル引数については、Terraform のドキュメントを参照してください。 https://developer.hashicorp.com/terraform/tutorials/state/resource-lifecycle#prevent-resource-deletion[] 。
+
+--
+.ANFデータ保護
+--
+.Azure でデータ保護を備えた ANF ボリュームを展開するための Terraform 構成ファイル
+このセクションには、Azure でデータ保護を備えた ANF (Azure Netapp Files) ボリュームをデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数の値を更新する `vars/azure_anf_data_protection.tfvars`。
++
+
+NOTE: 変数「vnet_creation_bool」と「subnet_creation_bool」の値を false に設定し、「subnet_id_for_anf_vol」を指定することにより、既存の vnet とサブネットを使用して ANF ボリュームをデプロイすることを選択できます。これらの値を true に設定して新しい vnet とサブネットを作成することもできます。その場合、サブネット ID は新しく作成されたサブネットから自動的に取得されます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.anf_data_protection" -var-file="vars/azure_anf_data_protection.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.anf_data_protection" -var-file="vars/azure_anf_data_protection.tfvars
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`ANF Data Protection`
+
+データ保護が有効になっている単一の ANF ボリュームの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *az_場所* | 弦 | (必須) リソースが存在するサポートされている Azure の場所を指定します。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_alt_location* | 弦 | (必須) セカンダリボリュームが作成される Azure の場所 
+
+
+| *az_プレフィックス* | 弦 | (必須) NetAppボリュームを作成するリソース グループの名前。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_vnet_プライマリアドレス空間* | 弦 | (必須) ANF プライマリ ボリュームの展開用に新しく作成された vnet によって使用されるアドレス空間。 
+
+
+| *az_vnet_セカンダリアドレス空間* | 弦 | (必須) ANF セカンダリ ボリュームの展開用に新しく作成された vnet で使用されるアドレス空間。 
+
+
+| *az_サブネット_プライマリ_アドレス_プレフィックス* | 弦 | (必須) ANF プライマリ ボリュームの展開用に新しく作成された vnet で使用されるサブネット アドレス プレフィックス。 
+
+
+| *az_サブネットセカンダリアドレスプレフィックス* | 弦 | (必須) ANF セカンダリ ボリュームの展開用に新しく作成された vnet で使用されるサブネット アドレス プレフィックス。 
+
+
+| *az_volume_path_primary* | 弦 | (必須) プライマリ ボリュームの一意のファイル パス。マウント ターゲットを作成するときに使用されます。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_volume_path_secondary* | 弦 | (必須) セカンダリ ボリュームの一意のファイル パス。マウント ターゲットを作成するときに使用されます。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_capacity_pool_size_primary* | 整数 | (必須) 容量プールのサイズ (TB 単位)。 
+
+
+| *az_capacity_pool_size_secondary* | 整数 | (必須) 容量プールのサイズ (TB 単位)。 
+
+
+| *az_vnet_primary_creation_bool* | ブーリアン | （必須）このブール値を `true`プライマリボリュームに新しい vnet を作成する場合。設定する `false`既存の vnet を使用します。 
+
+
+| *az_vnet_secondary_creation_bool* | ブーリアン | （必須）このブール値を `true`セカンダリボリューム用に新しい VNET を作成する場合。設定する `false`既存の vnet を使用します。 
+
+
+| *az_subnet_primary_creation_bool* | ブーリアン | （必須）このブール値を `true`プライマリボリュームの新しいサブネットを作成します。設定する `false`既存のサブネットを使用します。 
+
+
+| *az_subnet_secondary_creation_bool* | ブーリアン | （必須）このブール値を `true`セカンダリボリューム用の新しいサブネットを作成します。設定する `false`既存のサブネットを使用します。 
+
+
+| *az_primary_subnet_id_for_anf_vol* | 弦 | (必須) 既存のサブネットを使用する場合は、サブネットIDを指定します。 `subnet_primary_creation_bool`真実に。  false に設定する場合は、デフォルト値のままにします。 
+
+
+| *az_secondary_subnet_id_for_anf_vol* | 弦 | (必須) 既存のサブネットを使用する場合は、サブネットIDを指定します。 `subnet_secondary_creation_bool`真実に。  false に設定する場合は、デフォルト値のままにします。 
+
+
+| *az_netapp_pool_service_level_primary* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_pool_service_level_secondary* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_service_level_primary* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_service_level_secondary* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_protocol_primary* | 弦 | (オプション) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_protocol_secondary* | 弦 | (オプション) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_storage_quota_primary* | 弦 | (必須) ファイル システムに許可される最大ストレージ クォータ (ギガバイト単位)。 
+
+
+| *az_netapp_vol_storage_quota_secondary* | 弦 | (必須) ファイル システムに許可される最大ストレージ クォータ (ギガバイト単位)。 
+
+
+| *az_dp_レプリケーション頻度* | 弦 | （必須）レプリケーション頻度。サポートされている値は `10minutes`、 `hourly` 、 `daily`値は大文字と小文字が区別されます。 
+|===
+
+NOTE: 推奨に従って、このスクリプトは `prevent_destroy`ライフサイクル引数を使用すると、構成ファイル内での偶発的なデータ損失の可能性を軽減できます。詳細については、 `prevent_destroy`ライフサイクル引数については、Terraform のドキュメントを参照してください。 https://developer.hashicorp.com/terraform/tutorials/state/resource-lifecycle#prevent-resource-deletion[] 。
+
+--
+.ANFデュアルプロトコル
+--
+.Azure でデュアル プロトコルを使用した ANF ボリュームを展開するための Terraform 構成ファイル
+このセクションには、Azure でデュアル プロトコルが有効になっている ANF (Azure Netapp Files) ボリュームをデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数の値を更新する `vars/azure_anf_dual_protocol.tfvars`。
++
+
+NOTE: 変数「vnet_creation_bool」と「subnet_creation_bool」の値を false に設定し、「subnet_id_for_anf_vol」を指定することにより、既存の vnet とサブネットを使用して ANF ボリュームをデプロイすることを選択できます。これらの値を true に設定して新しい vnet とサブネットを作成することもできます。その場合、サブネット ID は新しく作成されたサブネットから自動的に取得されます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.anf_dual_protocol" -var-file="vars/azure_anf_dual_protocol.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.anf_dual_protocol" -var-file="vars/azure_anf_dual_protocol.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`Single Node Instance`
+
+デュアル プロトコルが有効になっている単一の ANF ボリュームの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *az_場所* | 弦 | (必須) リソースが存在するサポートされている Azure の場所を指定します。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_プレフィックス* | 弦 | (必須) NetAppボリュームを作成するリソース グループの名前。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_vnet_アドレス空間* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるアドレス空間。 
+
+
+| *az_サブネットアドレスプレフィックス* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるサブネット アドレス プレフィックス。 
+
+
+| *az_ボリューム_パス* | 弦 | (必須) ボリュームの一意のファイル パス。マウント ターゲットを作成するときに使用されます。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_容量プールのサイズ* | 整数 | (必須) 容量プールのサイズ (TB 単位)。 
+
+
+| *az_vnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しい vnet を作成する場合。設定する `false`既存の vnet を使用します。 
+
+
+| *az_subnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しいサブネットを作成します。設定する `false`既存のサブネットを使用します。 
+
+
+| *az_subnet_id_for_anf_vol* | 弦 | (必須) 既存のサブネットを使用する場合は、サブネットIDを指定します。 `subnet_creation_bool`真実に。  false に設定する場合は、デフォルト値のままにします。 
+
+
+| *az_netapp_pool_service_level* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_サービスレベル* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_protocol1* | 弦 | (必須) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_protocol2* | 弦 | (必須) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_storage_quota* | 弦 | (必須) ファイル システムに許可される最大ストレージ クォータ (ギガバイト単位)。 
+
+
+| *az_smb_server_ユーザー名* | 弦 | (必須) ActiveDirectory オブジェクトを作成するためのユーザー名。 
+
+
+| *az_smb_server_パスワード* | 弦 | (必須) ActiveDirectory オブジェクトを作成するためのユーザー パスワード。 
+
+
+| *az_smb_サーバー名* | 弦 | (必須) ActiveDirectory オブジェクトを作成するサーバー名。 
+
+
+| *az_smb_dns_servers* | 弦 | (必須) ActiveDirectory オブジェクトを作成するための DNS サーバー IP。 
+|===
+
+NOTE: 推奨に従って、このスクリプトは `prevent_destroy`ライフサイクル引数を使用すると、構成ファイル内での偶発的なデータ損失の可能性を軽減できます。詳細については、 `prevent_destroy`ライフサイクル引数については、Terraform のドキュメントを参照してください。 https://developer.hashicorp.com/terraform/tutorials/state/resource-lifecycle#prevent-resource-deletion[] 。
+
+--
+.スナップショットからの ANF ボリューム
+--
+.Azure 上のスナップショットから ANF ボリュームを展開するための Terraform 構成ファイル
+このセクションには、Azure 上のスナップショットから ANF (Azure Netapp Files) ボリュームをデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数の値を更新する `vars/azure_anf_volume_from_snapshot.tfvars`。
+
+
+
+NOTE: 変数「vnet_creation_bool」と「subnet_creation_bool」の値を false に設定し、「subnet_id_for_anf_vol」を指定することにより、既存の vnet とサブネットを使用して ANF ボリュームをデプロイすることを選択できます。これらの値を true に設定して新しい vnet とサブネットを作成することもできます。その場合、サブネット ID は新しく作成されたサブネットから自動的に取得されます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.anf_volume_from_snapshot" -var-file="vars/azure_anf_volume_from_snapshot.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.anf_volume_from_snapshot" -var-file="vars/azure_anf_volume_from_snapshot.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`Single Node Instance`
+
+スナップショットを使用した単一の ANF ボリュームの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *az_場所* | 弦 | (必須) リソースが存在するサポートされている Azure の場所を指定します。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_プレフィックス* | 弦 | (必須) NetAppボリュームを作成するリソース グループの名前。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_vnet_アドレス空間* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるアドレス空間。 
+
+
+| *az_サブネットアドレスプレフィックス* | 弦 | (必須) ANF ボリュームの展開用に新しく作成された vnet で使用されるサブネット アドレス プレフィックス。 
+
+
+| *az_ボリューム_パス* | 弦 | (必須) ボリュームの一意のファイル パス。マウント ターゲットを作成するときに使用されます。これを変更すると、新しいリソースが強制的に作成されます。 
+
+
+| *az_容量プールのサイズ* | 整数 | (必須) 容量プールのサイズ (TB 単位)。 
+
+
+| *az_vnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しい vnet を作成する場合。設定する `false`既存の vnet を使用します。 
+
+
+| *az_subnet_creation_bool* | ブーリアン | （必須）このブール値を `true`新しいサブネットを作成します。設定する `false`既存のサブネットを使用します。 
+
+
+| *az_subnet_id_for_anf_vol* | 弦 | (必須) 既存のサブネットを使用する場合は、サブネットIDを指定します。 `subnet_creation_bool`真実に。  false に設定する場合は、デフォルト値のままにします。 
+
+
+| *az_netapp_pool_service_level* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_サービスレベル* | 弦 | (必須) ファイル システムの目標パフォーマンス。有効な値は次のとおりです `Premium`、 `Standard` 、 または `Ultra`。 
+
+
+| *az_netapp_vol_プロトコル* | 弦 | (オプション) リストとして表されるターゲット ボリューム プロトコル。サポートされている単一の値には以下が含まれます `CIFS`、 `NFSv3` 、 または `NFSv4.1`。引数が定義されていない場合はデフォルトで `NFSv3`。これを変更すると、新しいリソースが強制的に作成され、データが失われます。 
+
+
+| *az_netapp_vol_storage_quota* | 弦 | (必須) ファイル システムに許可される最大ストレージ クォータ (ギガバイト単位)。 
+
+
+| *az_スナップショットID* | 弦 | (必須) 新しい ANF ボリュームを作成するときに使用するスナップショット ID。 
+|===
+
+NOTE: 推奨に従って、このスクリプトは `prevent_destroy`ライフサイクル引数を使用すると、構成ファイル内での偶発的なデータ損失の可能性を軽減できます。詳細については、 `prevent_destroy`ライフサイクル引数については、Terraform のドキュメントを参照してください。 https://developer.hashicorp.com/terraform/tutorials/state/resource-lifecycle#prevent-resource-deletion[] 。
+
+--
+.CVO シングルノード展開
+--
+.Azure にシングルノード CVO を展開するための Terraform 構成ファイル
+このセクションには、Azure で Single Node CVO (Cloud Volumes ONTAP) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数を更新する `vars\azure_cvo_single_node_deployment.tfvars`。
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.az_cvo_single_node_deployment" -var-file="vars\azure_cvo_single_node_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.az_cvo_single_node_deployment" -var-file="vars\azure_cvo_single_node_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`Single Node Instance`
+
+単一ノードのCloud Volumes ONTAP (CVO) の Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *リフレッシュトークン* | 弦 | (必須) NetAppクラウド マネージャーの更新トークン。これは、netapp Cloud Central から生成できます。 
+
+
+| *az_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *az_コネクタの場所* | 弦 | (必須) Cloud Manager コネクタが作成される場所。 
+
+
+| *az_コネクタ_サブスクリプション_id* | 弦 | (必須) Azure サブスクリプションの ID。 
+
+
+| *az_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *az_コネクタ_リソース_グループ* | 整数 | (必須) リソースが作成される Azure のリソース グループ。 
+
+
+| *az_connector_subnet_id* | 弦 | (必須) 仮想マシンのサブネットの名前。 
+
+
+| *az_connector_vnet_id* | 弦 | (必須) 仮想ネットワークの名前。 
+
+
+| *az_connector_ネットワーク_セキュリティ_グループ名* | 弦 | (必須) インスタンスのセキュリティ グループの名前。 
+
+
+| *az_connector_associate_public_ip_address* | 弦 | (必須) パブリック IP アドレスを仮想マシンに関連付けるかどうかを示します。 
+
+
+| *az_connector_account_id* | 弦 | (必須) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *az_connector_admin_パスワード* | 弦 | (必須) コネクタのパスワード。 
+
+
+| *az_connector_admin_ユーザー名* | 弦 | (必須) コネクタのユーザー名。 
+
+
+| *az_cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *az_cvo_location* | 弦 | (必須) 作業環境が作成される場所。 
+
+
+| *az_cvo_サブネットID* | 弦 | (必須) Cloud Volumes ONTAPシステムのサブネットの名前。 
+
+
+| *az_cvo_vnet_id* | 弦 | (必須) 仮想ネットワークの名前。 
+
+
+| *az_cvo_vnet_resource_group* | 弦 | (必須) 仮想ネットワークに関連付けられている Azure のリソース グループ。 
+
+
+| *az_cvo_データ暗号化タイプ* | 弦 | (必須) 作業環境で使用する暗号化の種類: `AZURE` 、 `NONE` ]。デフォルトは `AZURE`。 
+
+
+| *az_cvo_ストレージタイプ* | 弦 | (必須) 最初のデータ集約のストレージのタイプ: `Premium_LRS` 、 `Standard_LRS` 、 `StandardSSD_LRS` ]。デフォルトは `Premium_LRS` 
+
+
+| *az_cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *az_cvo_ワークスペースID* | 弦 | （必須） Cloud Volumes ONTAPをデプロイする Cloud Manager ワークスペースの ID。指定されない場合、Cloud Manager は最初のワークスペースを使用します。  IDはワークスペースタブから確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *az_cvo_容量_層* | 弦 | (必須) 最初のデータ集約に対してデータ階層化を有効にするかどうか:[`Blob` 、 `NONE` ]。デフォルトは `BLOB`。 
+
+
+| *az_cvo_writing_speed_state* | 弦 | （必須） Cloud Volumes ONTAPの書き込み速度設定： `NORMAL` 、 `HIGH` ]。デフォルトは `NORMAL`。この引数は HA ペアには関係ありません。 
+
+
+| *az_cvo_ontap_バージョン* | 弦 | (必須) 必要なONTAPバージョン。 'use_latest_version' が true に設定されている場合は無視されます。デフォルトでは最新バージョンが使用されます。 
+
+
+| *az_cvo_インスタンスタイプ* | 弦 | (必須) 使用するインスタンスのタイプ。選択したライセンス タイプによって異なります。[`Standard_DS3_v2` ]、 標準：[`Standard_DS4_v2,Standard_DS13_v2,Standard_L8s_v2` ]、プレミアム：[`Standard_DS5_v2`,`Standard_DS14_v2` ]、BYOL: PayGo に定義されているすべてのインスタンス タイプ。サポートされているその他のインスタンス タイプについては、 Cloud Volumes ONTAPリリース ノートを参照してください。デフォルトは `Standard_DS4_v2`。 
+
+
+| *az_cvo_ライセンスタイプ* | 弦 | (必須) 使用するライセンスの種類。単一ノードの場合:[`azure-cot-explore-paygo` 、 `azure-cot-standard-paygo` 、 `azure-cot-premium-paygo` 、 `azure-cot-premium-byol` 、 `capacity-paygo` ]。 HAの場合:[`azure-ha-cot-standard-paygo` 、 `azure-ha-cot-premium-paygo` 、 `azure-ha-cot-premium-byol` 、 `ha-capacity-paygo` ]。デフォルトは `azure-cot-standard-paygo`。使用 `capacity-paygo`または `ha-capacity-paygo`HA の場合、Bring Your Own License タイプとして容量ベースまたはフリーミアムを選択します。使用 `azure-cot-premium-byol`または `azure-ha-cot-premium-byol`HA の場合は、Bring Your Own License タイプでノードベースを選択します。 
+
+
+| *az_cvo_nss_アカウント* | 弦 | (必須) このCloud Volumes ONTAPシステムで使用するNetAppサポート サイトのアカウント ID。ライセンス タイプが BYOL であり、NSS アカウントが指定されていない場合、Cloud Manager は最初の既存の NSS アカウントを使用しようとします。 
+
+
+| *az_テナントID* | 弦 | (必須) Azure に登録されているアプリケーション/サービス プリンシパルのテナント ID。 
+
+
+| *az_アプリケーションID* | 弦 | (必須) Azure に登録されているアプリケーション/サービス プリンシパルのアプリケーション ID。 
+
+
+| *az_アプリケーションキー* | 弦 | (必須) Azure に登録されたアプリケーション/サービス プリンシパルのアプリケーション キー。 
+|===
+--
+.CVO HA 展開
+--
+.Azure に CVO HA を展開するための Terraform 構成ファイル
+このセクションには、Azure で CVO (Cloud Volumes ONTAP) HA (高可用性) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation
+----
+. Azure CLI にログインします (Azure CLI がインストールされている必要があります)。
++
+[source, cli]
+----
+    az login
+----
+. 変数を更新する `vars\azure_cvo_ha_deployment.tfvars`。
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.az_cvo_ha_deployment" -var-file="vars\azure_cvo_ha_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.az_cvo_ha_deployment" -var-file="vars\azure_cvo_ha_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+  terraform destroy
+----
+.レシピ:
+`HA Pair Instance`
+
+HA ペアCloud Volumes ONTAP (CVO) の Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *リフレッシュトークン* | 弦 | (必須) NetAppクラウド マネージャーの更新トークン。これは、netapp Cloud Central から生成できます。 
+
+
+| *az_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *az_コネクタの場所* | 弦 | (必須) Cloud Manager コネクタが作成される場所。 
+
+
+| *az_コネクタ_サブスクリプション_id* | 弦 | (必須) Azure サブスクリプションの ID。 
+
+
+| *az_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *az_コネクタ_リソース_グループ* | 整数 | (必須) リソースが作成される Azure のリソース グループ。 
+
+
+| *az_connector_subnet_id* | 弦 | (必須) 仮想マシンのサブネットの名前。 
+
+
+| *az_connector_vnet_id* | 弦 | (必須) 仮想ネットワークの名前。 
+
+
+| *az_connector_ネットワーク_セキュリティ_グループ名* | 弦 | (必須) インスタンスのセキュリティ グループの名前。 
+
+
+| *az_connector_associate_public_ip_address* | 弦 | (必須) パブリック IP アドレスを仮想マシンに関連付けるかどうかを示します。 
+
+
+| *az_connector_account_id* | 弦 | (必須) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *az_connector_admin_パスワード* | 弦 | (必須) コネクタのパスワード。 
+
+
+| *az_connector_admin_ユーザー名* | 弦 | (必須) コネクタのユーザー名。 
+
+
+| *az_cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *az_cvo_location* | 弦 | (必須) 作業環境が作成される場所。 
+
+
+| *az_cvo_サブネットID* | 弦 | (必須) Cloud Volumes ONTAPシステムのサブネットの名前。 
+
+
+| *az_cvo_vnet_id* | 弦 | (必須) 仮想ネットワークの名前。 
+
+
+| *az_cvo_vnet_resource_group* | 弦 | (必須) 仮想ネットワークに関連付けられている Azure のリソース グループ。 
+
+
+| *az_cvo_データ暗号化タイプ* | 弦 | (必須) 作業環境で使用する暗号化の種類: `AZURE` 、 `NONE` ]。デフォルトは `AZURE`。 
+
+
+| *az_cvo_ストレージタイプ* | 弦 | (必須) 最初のデータ集約のストレージのタイプ: `Premium_LRS` 、 `Standard_LRS` 、 `StandardSSD_LRS` ]。デフォルトは `Premium_LRS` 
+
+
+| *az_cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *az_cvo_ワークスペースID* | 弦 | （必須） Cloud Volumes ONTAPをデプロイする Cloud Manager ワークスペースの ID。指定されない場合、Cloud Manager は最初のワークスペースを使用します。  IDはワークスペースタブから確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *az_cvo_容量_層* | 弦 | (必須) 最初のデータ集約に対してデータ階層化を有効にするかどうか:[`Blob` 、 `NONE` ]。デフォルトは `BLOB`。 
+
+
+| *az_cvo_writing_speed_state* | 弦 | （必須） Cloud Volumes ONTAPの書き込み速度設定： `NORMAL` 、 `HIGH` ]。デフォルトは `NORMAL`。この引数は HA ペアには関係ありません。 
+
+
+| *az_cvo_ontap_バージョン* | 弦 | (必須) 必要なONTAPバージョン。 'use_latest_version' が true に設定されている場合は無視されます。デフォルトでは最新バージョンが使用されます。 
+
+
+| *az_cvo_インスタンスタイプ* | 弦 | (必須) 使用するインスタンスのタイプ。選択したライセンス タイプによって異なります。[`Standard_DS3_v2` ]、 標準：[`Standard_DS4_v2, Standard_DS13_v2, Standard_L8s_v2` ]、プレミアム：[`Standard_DS5_v2` 、 `Standard_DS14_v2` ]、BYOL: PayGo に定義されているすべてのインスタンス タイプ。サポートされているその他のインスタンス タイプについては、 Cloud Volumes ONTAPリリース ノートを参照してください。デフォルトは `Standard_DS4_v2`。 
+
+
+| *az_cvo_ライセンスタイプ* | 弦 | (必須) 使用するライセンスの種類。単一ノードの場合:[`azure-cot-explore-paygo, azure-cot-standard-paygo, azure-cot-premium-paygo, azure-cot-premium-byol, capacity-paygo` ]。 HAの場合:[`azure-ha-cot-standard-paygo, azure-ha-cot-premium-paygo, azure-ha-cot-premium-byol, ha-capacity-paygo` ]。デフォルトは `azure-cot-standard-paygo`。使用 `capacity-paygo`または `ha-capacity-paygo`HA の場合、Bring Your Own License タイプとして容量ベースまたはフリーミアムを選択します。使用 `azure-cot-premium-byol`または `azure-ha-cot-premium-byol`HA の場合は、Bring Your Own License タイプでノードベースを選択します。 
+
+
+| *az_cvo_nss_アカウント* | 弦 | (必須) このCloud Volumes ONTAPシステムで使用するNetAppサポート サイトのアカウント ID。ライセンス タイプが BYOL であり、NSS アカウントが指定されていない場合、Cloud Manager は最初の既存の NSS アカウントを使用しようとします。 
+
+
+| *az_テナントID* | 弦 | (必須) Azure に登録されているアプリケーション/サービス プリンシパルのテナント ID。 
+
+
+| *az_アプリケーションID* | 弦 | (必須) Azure に登録されているアプリケーション/サービス プリンシパルのアプリケーション ID。 
+
+
+| *az_アプリケーションキー* | 弦 | (必須) Azure に登録されたアプリケーション/サービス プリンシパルのアプリケーション キー。 
+|===
+--
+====

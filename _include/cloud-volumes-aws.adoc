@@ -1,0 +1,472 @@
+= 
+:allow-uri-read: 
+
+
+[role="tabbed-block"]
+====
+.CVO シングルノード展開
+--
+.AWS 上のNetApp CVO (シングルノードインスタンス) のデプロイメント用の Terraform 構成ファイル
+このセクションには、AWS (Amazon Web Services) 上で単一ノードのNetApp CVO (Cloud Volumes ONTAP) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. CLI から AWS 認証情報を設定します。
++
+[source, cli]
+----
+    aws configure
+----
++
+** AWS アクセスキー ID [なし]: accesskey
+** AWS シークレットアクセスキー [なし]: secretkey
+** デフォルトのリージョン名 [なし]: us-west-2
+** デフォルトの出力形式 [なし]: json
+
+
+. 変数の値を更新する `vars/aws_cvo_single_node_deployment.tfvar`
++
+
+NOTE: 変数「aws_connector_deploy_bool」の値を true/false に設定することで、コネクタをデプロイすることを選択できます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.aws_sn" -var-file="vars/aws_cvo_single_node_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.aws_sn" -var-file="vars/aws_cvo_single_node_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`Connector`
+
+CVO デプロイメント用のNetApp AWS コネクタ インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *aws_connector_deploy_bool* | ブール | (必須) コネクタのデプロイメントを確認します。 
+
+
+| *aws_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *aws_connector_region* | 弦 | (必須) Cloud Manager コネクタが作成されるリージョン。 
+
+
+| *aws_connector_key_name* | 弦 | (必須) コネクタ インスタンスに使用するキー ペアの名前。 
+
+
+| *aws_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *aws_connector_instance_type* | 弦 | (必須) インスタンスのタイプ (例: t3.xlarge)。少なくとも 4 つの CPU と 16 GB のメモリが必要です。 
+
+
+| *aws_connector_subnet_id* | 弦 | (必須) インスタンスのサブネットの ID。 
+
+
+| *aws_connector_security_group_id* | 弦 | (必須) インスタンスのセキュリティ グループの ID。複数のセキュリティ グループを ',' で区切って指定できます。 
+
+
+| *aws_connector_iam_instance_profile_name* | 弦 | (必須) コネクタのインスタンス プロファイルの名前。 
+
+
+| *aws_connector_account_id* | 弦 | (オプション) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *aws_connector_public_ip_bool* | ブール | (オプション) インスタンスにパブリック IP アドレスを関連付けるかどうかを示します。指定しない場合は、サブネットの構成に基づいて関連付けが行われます。 
+|===
+`Single Node Instance`
+
+単一のNetApp CVO インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *cvo_region* | 弦 | (必須) 作業環境が作成されるリージョン。 
+
+
+| *cvo_サブネットID* | 弦 | (必須) 作業環境が作成されるサブネット ID。 
+
+
+| *cvo_vpc_id* | 弦 | (オプション) 作業環境が作成される VPC ID。この引数を指定しない場合は、指定されたサブネット ID を使用して VPC が計算されます。 
+
+
+| *cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *cvo_writing_speed_state* | 弦 | (オプション) Cloud Volumes ONTAPの書き込み速度設定: ['NORMAL'、'HIGH']。デフォルトは「NORMAL」です。 
+|===
+--
+.CVO HA 展開
+--
+.AWS 上でのNetApp CVO (HA ペア) のデプロイメント用の Terraform 構成ファイル
+このセクションには、AWS (Amazon Web Services) 上の高可用性ペアでNetApp CVO (Cloud Volumes ONTAP) をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. CLI から AWS 認証情報を設定します。
++
+[source, cli]
+----
+    aws configure
+----
++
+** AWS アクセスキー ID [なし]: accesskey
+** AWS シークレットアクセスキー [なし]: secretkey
+** デフォルトのリージョン名 [なし]: us-west-2
+** デフォルトの出力形式 [なし]: json
+
+
+. 変数の値を更新する `vars/aws_cvo_ha_deployment.tfvars`。
++
+
+NOTE: 変数「aws_connector_deploy_bool」の値を true/false に設定することで、コネクタをデプロイすることを選択できます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+      terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.aws_ha" -var-file="vars/aws_cvo_ha_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.aws_ha" -var-file="vars/aws_cvo_ha_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`Connector`
+
+CVO デプロイメント用のNetApp AWS コネクタ インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *aws_connector_deploy_bool* | ブール | (必須) コネクタのデプロイメントを確認します。 
+
+
+| *aws_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *aws_connector_region* | 弦 | (必須) Cloud Manager コネクタが作成されるリージョン。 
+
+
+| *aws_connector_key_name* | 弦 | (必須) コネクタ インスタンスに使用するキー ペアの名前。 
+
+
+| *aws_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *aws_connector_instance_type* | 弦 | (必須) インスタンスのタイプ (例: t3.xlarge)。少なくとも 4 つの CPU と 16 GB のメモリが必要です。 
+
+
+| *aws_connector_subnet_id* | 弦 | (必須) インスタンスのサブネットの ID。 
+
+
+| *aws_connector_security_group_id* | 弦 | (必須) インスタンスのセキュリティ グループの ID。複数のセキュリティ グループを ',' で区切って指定できます。 
+
+
+| *aws_connector_iam_instance_profile_name* | 弦 | (必須) コネクタのインスタンス プロファイルの名前。 
+
+
+| *aws_connector_account_id* | 弦 | (オプション) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *aws_connector_public_ip_bool* | ブール | (オプション) インスタンスにパブリック IP アドレスを関連付けるかどうかを示します。指定しない場合は、サブネットの構成に基づいて関連付けが行われます。 
+|===
+`HA Pair`
+
+HA ペアのNetApp CVO インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *cvo_is_ha* | ブール | (オプション) 作業環境が HA ペアであるかどうかを示します [true、false]。デフォルトはfalseです。 
+
+
+| *cvo_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *cvo_region* | 弦 | (必須) 作業環境が作成されるリージョン。 
+
+
+| *cvo_node1_サブネットID* | 弦 | (必須) 最初のノードが作成されるサブネット ID。 
+
+
+| *cvo_node2_サブネットID* | 弦 | (必須) 2 番目のノードが作成されるサブネット ID。 
+
+
+| *cvo_vpc_id* | 弦 | (オプション) 作業環境が作成される VPC ID。この引数を指定しない場合は、指定されたサブネット ID を使用して VPC が計算されます。 
+
+
+| *cvo_svm_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *cvo_フェイルオーバーモード* | 弦 | (オプション) HA の場合、HA ペアのフェイルオーバー モード: ['PrivateIP', 'FloatingIP']。  「PrivateIP」は単一のアベイラビリティーゾーン用で、「FloatingIP」は複数のアベイラビリティーゾーン用です。 
+
+
+| *cvo_mediator_subnet_id* | 弦 | (オプション) HA の場合、メディエーターのサブネット ID。 
+
+
+| *cvo_mediator_key_pair_name* | 弦 | (オプション) HA の場合、メディエーター インスタンスのキー ペア名。 
+
+
+| *cvo_cluster_floating_ip* | 弦 | (オプション) HA FloatingIP の場合、クラスター管理フローティング IP アドレス。 
+
+
+| *cvo_data_floating_ip* | 弦 | (オプション) HA FloatingIP の場合、データのフローティング IP アドレス。 
+
+
+| *cvo_data_floating_ip2* | 弦 | (オプション) HA FloatingIP の場合、データのフローティング IP アドレス。 
+
+
+| *cvo_svm_フローティングIP* | 弦 | (オプション) HA FloatingIP の場合、SVM 管理フローティング IP アドレス。 
+
+
+| *cvo_route_table_ids* | リスト | (オプション) HA FloatingIP の場合、フローティング IP で更新されるルート テーブル ID のリスト。 
+|===
+--
+.FSx デプロイメント
+--
+.AWS にNetApp ONTAP FSx を展開するための Terraform 構成ファイル
+このセクションには、AWS (Amazon Web Services) にNetApp ONTAP FSx をデプロイ/構成するためのさまざまな Terraform 構成ファイルが含まれています。
+
+Terraform ドキュメント: https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs[]
+
+.手順
+テンプレートを実行するには:
+
+. リポジトリをクローンします。
++
+[source, cli]
+----
+    git clone https://github.com/NetApp/na_cloud_volumes_automation.git
+----
+. 目的のフォルダに移動します
++
+[source, cli]
+----
+    cd na_cloud_volumes_automation/
+----
+. CLI から AWS 認証情報を設定します。
++
+[source, cli]
+----
+    aws configure
+----
++
+** AWS アクセスキー ID [なし]: accesskey
+** AWS シークレットアクセスキー [なし]: secretkey
+** デフォルトのリージョン名 [なし]: us-west-2
+** デフォルトの出力形式 [なし]:
+
+
+. 変数の値を更新する `vars/aws_fsx_deployment.tfvars`
++
+
+NOTE: 変数「aws_connector_deploy_bool」の値を true/false に設定することで、コネクタをデプロイすることを選択できます。
+
+. Terraform リポジトリを初期化して、すべての前提条件をインストールし、デプロイメントの準備をします。
++
+[source, cli]
+----
+    terraform init
+----
+. terraform validate コマンドを使用して、terraform ファイルを検証します。
++
+[source, cli]
+----
+    terraform validate
+----
+. 構成のドライ ランを実行して、デプロイメントで予想されるすべての変更をプレビューします。
++
+[source, cli]
+----
+    terraform plan -target="module.aws_fsx" -var-file="vars/aws_fsx_deployment.tfvars"
+----
+. デプロイメントを実行する
++
+[source, cli]
+----
+    terraform apply -target="module.aws_fsx" -var-file="vars/aws_fsx_deployment.tfvars"
+----
+
+
+デプロイメントを削除するには
+
+[source, cli]
+----
+    terraform destroy
+----
+.レシピ:
+`Connector`
+
+NetApp AWS コネクタ インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *aws_connector_deploy_bool* | ブール | (必須) コネクタのデプロイメントを確認します。 
+
+
+| *aws_コネクタ名* | 弦 | (必須) Cloud Manager コネクタの名前。 
+
+
+| *aws_connector_region* | 弦 | (必須) Cloud Manager コネクタが作成されるリージョン。 
+
+
+| *aws_connector_key_name* | 弦 | (必須) コネクタ インスタンスに使用するキー ペアの名前。 
+
+
+| *aws_connector_company* | 弦 | (必須) ユーザーの会社名。 
+
+
+| *aws_connector_instance_type* | 弦 | (必須) インスタンスのタイプ (例: t3.xlarge)。少なくとも 4 つの CPU と 16 GB のメモリが必要です。 
+
+
+| *aws_connector_subnet_id* | 弦 | (必須) インスタンスのサブネットの ID。 
+
+
+| *aws_connector_security_group_id* | 弦 | (必須) インスタンスのセキュリティ グループの ID。複数のセキュリティ グループを ',' で区切って指定できます。 
+
+
+| *aws_connector_iam_instance_profile_name* | 弦 | (必須) コネクタのインスタンス プロファイルの名前。 
+
+
+| *aws_connector_account_id* | 弦 | (オプション) コネクタが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *aws_connector_public_ip_bool* | ブール | (オプション) インスタンスにパブリック IP アドレスを関連付けるかどうかを示します。指定しない場合は、サブネットの構成に基づいて関連付けが行われます。 
+|===
+`FSx Instance`
+
+NetApp ONTAP FSx インスタンスの Terraform 変数。
+
+[cols="20%, 10%, 70%"]
+|===
+| *名前* | *タイプ* | *説明* 
+
+
+| *fsx_name* | 弦 | （必須） Cloud Volumes ONTAP作業環境の名前。 
+
+
+| *fsx_region* | 弦 | (必須) 作業環境が作成されるリージョン。 
+
+
+| *fsx_プライマリ_サブネット_id* | 弦 | (必須) 作業環境が作成されるプライマリサブネット ID。 
+
+
+| *fsx_セカンダリ_サブネット_id* | 弦 | (必須) 作業環境が作成されるセカンダリサブネット ID。 
+
+
+| *fsxアカウントID* | 弦 | (必須) FSx インスタンスが関連付けられるNetAppアカウント ID。指定されない場合、Cloud Manager は最初のアカウントを使用します。アカウントが存在しない場合は、Cloud Manager によって新しいアカウントが作成されます。アカウントIDは、Cloud Managerのアカウントタブで確認できます。 https://cloudmanager.netapp.com[] 。 
+
+
+| *fsx_ワークスペースID* | 弦 | (必須) 作業環境の Cloud Manager ワークスペースの ID。 
+
+
+| *fsx_admin_パスワード* | 弦 | (必須) Cloud Volumes ONTAPの管理者パスワード。 
+
+
+| *fsx_スループット容量* | 弦 | (オプション) スループットの容量。 
+
+
+| *fsx_ストレージ容量_サイズ* | 弦 | (オプション) 最初のデータ集約の EBS ボリューム サイズ。  GB の場合、単位は [100 または 500] になります。 TBの場合、単位は[1,2,4,8,16]になります。デフォルトは「1」です 
+
+
+| *fsx_ストレージ容量サイズ単位* | 弦 | (オプション) ['GB' または 'TB']。デフォルトは「TB」です。 
+
+
+| *fsx_cloudmanager_aws_credential_name* | 弦 | (必須) AWS 認証情報アカウント名。 
+|===
+--
+====

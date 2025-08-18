@@ -1,0 +1,46 @@
+= 
+:allow-uri-read: 
+
+
+. Ansible コントロール ノードの要件:
++
+.. 次のパッケージがインストールされた RHEL/CentOS マシン:
++
+... Python3
+... ピップ3
+... Ansible (バージョン 2.10.0 以上)
+... ギット
+
+
+
+
+
+
+上記の要件がインストールされていない新しい RHEL/CentOS マシンがある場合は、以下の手順に従ってそのマシンを Ansible コントロール ノードとして設定します。
+
+. RHEL-8/RHEL-7 用の Ansible リポジトリを有効にする
++
+.. RHEL-8の場合（以下のコマンドをrootとして実行）
++
+[source, cli]
+----
+subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms
+----
+.. RHEL-7の場合（以下のコマンドをrootとして実行）
++
+[source, cli]
+----
+subscription-manager repos --enable rhel-7-server-ansible-2.9-rpms
+----
+
+
+. 以下の内容をターミナルに貼り付けます
++
+[source, cli]
+----
+sudo yum -y install python3 >> install.log
+sudo yum -y install python3-pip >> install.log
+python3 -W ignore -m pip --disable-pip-version-check install ansible >> install.log
+sudo yum -y install git >> install.log
+----
+

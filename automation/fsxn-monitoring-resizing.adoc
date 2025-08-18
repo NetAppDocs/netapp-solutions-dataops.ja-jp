@@ -1,0 +1,401 @@
+---
+sidebar: sidebar 
+permalink: automation/fsxn-monitoring-resizing.html 
+keywords: AWS, FSX, FSx ONTAP, automation, FSx ONTAP monitoring, FSx ONTAP automation, FSx ONTAP resizing, FSx ONTAP monitoring, FSx ONTAP monitoring 
+summary: このページでは、AWS FSx ONTAP の監視としきい値に基づく自動サイズ変更に関する自動化について説明します。 
+---
+= AWS Lambda 関数を使用した FSx ONTAP の監視と自動サイズ変更
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+このページでは、AWS FSx ONTAP の監視としきい値に基づく自動サイズ変更に関する自動化について説明します。
+
+
+
+== 概要: AWS Lambda 関数による FSx ONTAP の監視と自動サイズ変更
+
+FSx ONTAPは、AWS で利用できるファーストパーティのエンタープライズグレードのクラウド ストレージ サービスであり、人気のNetApp ONTAPファイル システム上に構築された、信頼性が高く、スケーラブルで、高性能かつ機能豊富なファイル ストレージを提供します。
+
+FSx ONTAP は、シームレスな導入と管理エクスペリエンスを提供します。始めるのにストレージの専門知識は必要ありません。監視を簡素化するために、AWS Lambda 関数 (しきい値に基づいて合計ストレージ容量、ボリューム サイズ、または LUN サイズのサイズ変更を自動化する) を使用できます。  このドキュメントでは、FSx ONTAP を定期的に監視し、ユーザーが指定したしきい値を超えたときに通知してサイズを変更し、サイズ変更アクティビティを管理者に通知する自動セットアップを作成するためのステップバイステップ ガイドを提供します。
+
+.機能
+[%collapsible%open]
+====
+このソリューションは次の機能を提供します。
+
+* 監視機能:
++
+** FSx ONTAPの全体的なストレージ容量の使用状況
+** 各ボリュームの使用状況（シンプロビジョニング / シックプロビジョニング）
+** 各 LUN の使用状況 (シンプロビジョニング / シックプロビジョニング)
+
+
+* ユーザー定義のしきい値を超えたときに、上記のいずれかのサイズを変更する機能
+* 使用状況の警告やサイズ変更の通知を電子メールで受け取るアラートメカニズム
+* ユーザー定義のしきい値よりも古いスナップショットを削除する機能
+* FlexCloneボリュームと関連するスナップショットのリストを取得する機能
+* 定期的にチェックを監視する機能
+* インターネットアクセスの有無にかかわらずソリューションを使用できる
+* 手動でのデプロイ、または AWS CloudFormation テンプレートを使用したデプロイが可能
+* 単一の VPC 内で複数の FSx ONTAPファイルシステムを監視する機能
+
+
+====
+.前提条件
+[%collapsible%open]
+====
+始める前に、次の前提条件が満たされていることを確認してください。
+
+* FSx ONTAPが導入されている
+* FSx ONTAPに接続できるプライベートサブネット
+* FSx ONTAPに「fsxadmin」パスワードが設定されました
+
+
+====
+.アーキテクチャの概要
+[%collapsible%open]
+====
+* AWS Lambda 関数は、ストレージ容量、ボリューム、LUN のサイズを取得および更新するために、FSx ONTAPへの API 呼び出しを行います。
+* セキュリティ強化のため、「fsxadmin」パスワードは AWS SSM パラメータ ストアに安全な文字列として保存されます。
+* AWS SES (Simple Email Service) は、サイズ変更イベントが発生したときにエンドユーザーに通知するために使用されます。
+* インターネットにアクセスできない VPC にソリューションを展開する場合、AWS SSM、FSx、SES の VPC エンドポイントが設定され、Lambda が AWS 内部ネットワーク経由でこれらのサービスにアクセスできるようになります。
+
+
+image:fsxn-monitoring-resizing-architecture.png["この画像は、このソリューションで使用される高レベルのアーキテクチャを示しています。"]
+
+====
+
+
+== ソリューションの展開
+
+
+
+=== 自動展開
+
+
+NOTE: 単一の FSx ONTAPファイルシステムをカバーします。
+
+このソリューションの自動展開を完了するには、次の一連の手順に従います。
+
+.ステップ1: GitHubリポジトリをクローンする
+[%collapsible%open]
+====
+ローカル システムに GitHub リポジトリをクローンします。
+
+[listing]
+----
+git clone https://github.com/NetApp/fsxn-monitoring-auto-resizing.git
+----
+====
+.ステップ2: AWS S3バケットを設定する
+[%collapsible%open]
+====
+. AWS コンソール > *S3* に移動し、*バケットの作成* をクリックします。デフォルト設定でバケットを作成します。
+. バケットに入ったら、[アップロード] > [ファイルの追加] をクリックし、システム上のクローンされた GitHub リポジトリから [Utilities.zip] を選択します。
++
+image:fsxn-monitoring-resizing-s3-upload-zip-files.png["この画像は、zipファイルがアップロードされているS3ウィンドウを示しています。"]
+
+
+
+====
+.ステップ3: AWS SES SMTPセットアップ（インターネットアクセスが利用できない場合は必須）
+[%collapsible%open]
+====
+インターネットにアクセスせずにソリューションをデプロイする場合は、次の手順に従ってください (注: VPC エンドポイントの設定に関連する追加コストが発生します)。
+
+. AWSコンソール > *AWS Simple Email Service (SES)* > *SMTP設定* に移動し、*SMTP認証情報の作成* をクリックします。
+. IAM ユーザー名を入力するか、デフォルト値のままにして、「*ユーザーの作成*」をクリックします。今後使用するために、*SMTP ユーザー名* と *SMTP パスワード* を保存します。
++
+
+NOTE: SES SMTP セットアップがすでに行われている場合は、この手順をスキップしてください。
+
++
+image:fsxn-monitoring-resizing-ses-smtp-creds-add.png["この画像はAWS SESのSMTP認証情報の作成ウィンドウを示しています"]
+
+
+
+====
+.ステップ4: AWS CloudFormationのデプロイ
+[%collapsible%open]
+====
+. AWS コンソール > *CloudFormation* > スタックの作成 > 新しいリソース (標準) に移動します。
++
+[listing]
+----
+Prepare template: Template is ready
+Specify template: Upload a template file
+Choose file: Browse to the cloned GitHub repo and select fsxn-monitoring-solution.yaml
+----
++
+image:fsxn-monitoring-resizing-create-cft-001.png["この画像はAWS CloudFormationのスタック作成ウィンドウを示しています"]
+
++
+「次へ」をクリック
+
+. スタックの詳細を入力します。  「次へ」をクリックし、「AWS CloudFormation によって IAM リソースが作成される可能性があることを認めます」のチェックボックスをオンにして、「送信」をクリックします。
++
+
+NOTE: 「VPC はインターネットにアクセスできますか?」が False に設定されている場合は、「AWS SES の SMTP ユーザー名」と「AWS SES の SMTP パスワード」が必要です。それ以外の場合は、空のままにしておくことができます。
+
++
+image:fsxn-monitoring-resizing-cft-stack-details-001.png["この画像はAWS CloudFormationのスタック詳細ウィンドウを示しています"]
+
++
+image:fsxn-monitoring-resizing-cft-stack-details-002.png["この画像はAWS CloudFormationのスタック詳細ウィンドウを示しています"]
+
++
+image:fsxn-monitoring-resizing-cft-stack-details-003.png["この画像はAWS CloudFormationのスタック詳細ウィンドウを示しています"]
+
++
+image:fsxn-monitoring-resizing-cft-stack-details-004.png["この画像はAWS CloudFormationのスタック詳細ウィンドウを示しています"]
+
+. CloudFormation のデプロイが開始されると、「送信者メール ID」に記載されているメール ID に、AWS SES でのメールアドレスの使用を承認するよう求めるメールが届きます。リンクをクリックしてメールアドレスを確認してください。
+. CloudFormation スタックのデプロイが完了すると、警告や通知がある場合は、通知の詳細が記載されたメールが受信者のメール ID に送信されます。
++
+image:fsxn-monitoring-resizing-email-001.png["この画像は、通知が利用可能な場合に受信した電子メール通知を示しています。"]
+
++
+image:fsxn-monitoring-resizing-email-002.png["この画像は、通知が利用可能な場合に受信した電子メール通知を示しています。"]
+
+
+
+====
+
+
+=== 手動展開
+
+
+NOTE: 単一の VPC 内の複数の FSx ONTAPファイルシステムの監視をサポートします。
+
+このソリューションの手動展開を完了するには、次の一連の手順に従います。
+
+.ステップ1: GitHubリポジトリをクローンする
+[%collapsible%open]
+====
+ローカル システムに GitHub リポジトリをクローンします。
+
+[listing]
+----
+git clone https://github.com/NetApp/fsxn-monitoring-auto-resizing.git
+----
+====
+.ステップ 2: AWS SES SMTP セットアップ (インターネットアクセスが利用できない場合は必須)
+[%collapsible%open]
+====
+インターネットにアクセスせずにソリューションをデプロイする場合は、次の手順に従ってください (注: VPC エンドポイントの設定に関連する追加コストが発生します)。
+
+. AWSコンソール > *AWS Simple Email Service (SES)* > SMTP設定に移動し、*SMTP認証情報の作成*をクリックします。
+. IAM ユーザー名を入力するか、デフォルト値のままにして、「作成」をクリックします。今後使用するためにユーザー名とパスワードを保存します。
++
+image:fsxn-monitoring-resizing-ses-smtp-creds-add.png["この画像はAWS SESのSMTP認証情報の作成ウィンドウを示しています"]
+
+
+
+====
+.ステップ3: fsxadminパスワードのSSMパラメータを作成する
+[%collapsible%open]
+====
+AWS コンソール > *パラメータストア* に移動し、*パラメータの作成* をクリックします。
+
+[listing]
+----
+Name: <Any name/path for storing fsxadmin password>
+Tier: Standard
+Type: SecureString
+KMS key source: My current account
+  KMS Key ID: <Use the default one selected>
+Value: <Enter the password for "fsxadmin" user configured on FSx ONTAP>
+----
+*パラメータの作成*をクリックします。監視対象となるすべての FSx ONTAPファイルシステムに対して上記の手順を繰り返します。
+
+image:fsxn-monitoring-resizing-ssm-parameter.png["この画像は、AWS コンソールの SSM パラメータ作成ウィンドウを示しています。"]
+
+インターネットにアクセスせずにソリューションを展開する場合は、SMTP ユーザー名と SMTP パスワードを保存するために同じ手順を実行します。それ以外の場合は、これら 2 つのパラメータの追加をスキップします。
+
+====
+.ステップ4: メールサービスの設定
+[%collapsible%open]
+====
+AWS コンソール > *Simple Email Service (SES)* に移動し、*Create Identity* をクリックします。
+
+[listing]
+----
+Identity type: Email address
+Email address: <Enter an email address to be used for sending resizing notifications>
+----
+*アイデンティティを作成*をクリックします
+
+「送信者メール ID」に記載されているメール ID に、所有者に AWS SES でのメールアドレスの使用を承認するよう求めるメールが届きます。リンクをクリックしてメールアドレスを確認してください。
+
+image:fsxn-monitoring-resizing-ses.png["この画像は、AWS コンソールの SES ID 作成ウィンドウを示しています。"]
+
+====
+.ステップ 5: VPC エンドポイントを設定する (インターネット アクセスが利用できない場合に必要)
+[%collapsible%open]
+====
+
+NOTE: インターネットにアクセスできない状態で展開される場合にのみ必要です。  VPC エンドポイントに関連する追加コストが発生します。
+
+. AWS コンソール > *VPC* > *エンドポイント* に移動し、*エンドポイントの作成* をクリックして、次の詳細を入力します。
++
+[listing]
+----
+Name: <Any name for the vpc endpoint>
+Service category: AWS Services
+Services: com.amazonaws.<region>.fsx
+vpc: <select the vpc where lambda will be deployed>
+subnets: <select the subnets where lambda will be deployed>
+Security groups: <select the security group>
+Policy: <Either choose Full access or set your own custom policy>
+----
++
+エンドポイントの作成をクリックします。
+
++
+image:fsxn-monitoring-resizing-vpc-endpoint-create-001.png["この画像はVPCエンドポイント作成ウィンドウを示しています"]
+
++
+image:fsxn-monitoring-resizing-vpc-endpoint-create-002.png["この画像はVPCエンドポイント作成ウィンドウを示しています"]
+
+. SES および SSM VPC エンドポイントを作成する場合も同じプロセスに従います。すべてのパラメータは、それぞれ *com.amazonaws.<region>.smtp* および *com.amazonaws.<region>.ssm* に対応するサービスを除き、上記と同じままです。
+
+
+====
+.ステップ6: AWS Lambda関数を作成して設定する
+[%collapsible%open]
+====
+. AWSコンソール > *AWS Lambda* > *関数* に移動し、FSx ONTAPと同じリージョンで *関数の作成* をクリックします。
+. デフォルトの「最初から作成」を使用して、次のフィールドを更新します。
++
+[listing]
+----
+Function name: <Any name of your choice>
+Runtime: Python 3.9
+Architecture: x86_64
+Permissions: Select "Create a new role with basic Lambda permissions"
+Advanced Settings:
+  Enable VPC: Checked
+    VPC: <Choose either the same VPC as FSx ONTAP or a VPC that can access both FSx ONTAP and the internet via a private subnet>
+    Subnets: <Choose 2 private subnets that have NAT gateway attached pointing to public subnets with internet gateway and subnets that have internet access>
+    Security Group: <Choose a Security Group>
+----
++
+*関数を作成*をクリックします。
+
++
+image:fsxn-monitoring-resizing-lambda-creation-001.png["この画像は、AWS コンソールの Lambda 作成ウィンドウを示しています。"]
+
++
+image:fsxn-monitoring-resizing-lambda-creation-002.png["この画像は、AWS コンソールの Lambda 作成ウィンドウを示しています。"]
+
+. 新しく作成された Lambda 関数に移動し、*レイヤー* セクションまで下にスクロールして、*レイヤーの追加* をクリックします。
++
+image:fsxn-monitoring-resizing-add-layer-button.png["この画像は、AWS Lambda 関数コンソールのレイヤー追加ボタンを示しています。"]
+
+. *レイヤーソース*の下の*新しいレイヤーを作成*をクリックします
+. レイヤーを作成し、*Utilities.zip* ファイルをアップロードします。互換性のあるランタイムとして *Python 3.9* を選択し、*作成* をクリックします。
++
+image:fsxn-monitoring-resizing-create-layer-paramiko.png["この画像は、AWS コンソールの「新しいレイヤーの作成」ウィンドウを示しています。"]
+
+. AWS Lambda 関数 > *レイヤーの追加* > *カスタムレイヤー* に戻り、ユーティリティレイヤーを追加します。
++
+image:fsxn-monitoring-resizing-add-layer-window.png["この画像は、AWS Lambda 関数コンソールのレイヤー追加ウィンドウを示しています。"]
+
++
+image:fsxn-monitoring-resizing-layers-added.png["この画像は、AWS Lambda 関数コンソールに追加されたレイヤーを示しています。"]
+
+. Lambda 関数の *構成* タブに移動し、 *一般構成* の下にある *編集* をクリックします。タイムアウトを*5分*に変更し、[保存]をクリックします。
+. Lambda 関数の *Permissions* タブに移動し、割り当てられたロールをクリックします。ロールの権限タブで、*権限の追加* > *インライン ポリシーの作成* をクリックします。
++
+.. JSON タブをクリックし、GitHub リポジトリからファイル policy.json の内容を貼り付けます。
+.. ${AWS::AccountId} をアカウントIDに置き換えて、[ポリシーの確認] をクリックします。
+.. ポリシーの名前を入力し、「ポリシーの作成」をクリックします。
+
+
+. Git リポジトリの *fsxn_monitoring_resizing_lambda.py* の内容を、AWS Lambda 関数のコードソースセクションの *lambda_function.py* にコピーします。
+. lambda_function.py と同じレベルに新しいファイルを作成し、*vars.py* という名前を付けて、git リポジトリから vars.py の内容を lambda 関数 vars.py ファイルにコピーします。 vars.py 内の変数値を更新します。以下の変数定義を参照して、「デプロイ」をクリックします。
++
+|===
+
+
+| *名前* | *タイプ* | *説明* 
+
+
+| *fsxリスト* | リスト | (必須) 監視対象となるすべての FSx ONTAPファイルシステムのリスト。監視および自動サイズ変更の対象として、すべてのファイル システムをリストに含めます。 
+
+
+| *fsx管理IP* | 弦 | (必須) AWS の FSx ONTAPコンソールから「管理エンドポイント - IP アドレス」を入力します。 
+
+
+| *fsxId* | 弦 | (必須) AWS の FSx ONTAPコンソールから「ファイルシステム ID」を入力します。 
+
+
+| *ユーザー名* | 弦 | (必須) AWS 上の FSx ONTAPコンソールから FSx ONTAPの「ONTAP管理者ユーザー名」を入力します。 
+
+
+| *サイズ変更しきい値* | 整数 | (必須) しきい値のパーセンテージを 0 ～ 100 の範囲で入力します。このしきい値は、ストレージ容量、ボリューム、および LUN の使用状況を測定するために使用され、使用率がこのしきい値を超えると、サイズ変更アクティビティが発生します。 
+
+
+| *fsx_password_ssm_parameter* | 弦 | (必須) 「fsxadmin」パスワードを保存するために AWS パラメータストアで使用されるパス名を入力します。 
+
+
+| *警告通知* | ブール | (必須) ストレージ容量/ボリューム/LUN の使用率が 75% を超えたがしきい値を下回っている場合に通知を受け取るには、この変数を True に設定します。 
+
+
+| *スナップショットの削除を有効にする* | ブール | (必須) この変数を True に設定すると、「snapshot_age_threshold_in_days」で指定された値よりも古いスナップショットのボリューム レベルのスナップショット削除が有効になります。 
+
+
+| *スナップショットの保存日数しきい値* | 整数 | (必須) ボリューム レベルのスナップショットを保持する日数を入力します。指定された値よりも古いスナップショットは削除され、電子メールで通知されます。 
+
+
+| *インターネットアクセス* | ブール | (必須) この Lambda がデプロイされているサブネットからインターネット アクセスが利用できる場合は、この変数を True に設定します。それ以外の場合は False に設定します。 
+
+
+| *smtp_region* | 弦 | (オプション)「internet_access」変数が False に設定されている場合は、Lambda がデプロイされているリージョンを入力します。例：us-east-1（この形式） 
+
+
+| *smtp_username_ssm_parameter* | 弦 | (オプション)「internet_access」変数が False に設定されている場合は、SMTP ユーザー名を保存するために AWS パラメータ ストアで使用されるパス名を入力します。 
+
+
+| *smtp_password_ssm_parameter* | 弦 | (オプション)「internet_access」変数が False に設定されている場合は、SMTP パスワードを保存するために AWS パラメータ ストアで使用されるパス名を入力します。 
+
+
+| *送信者メールアドレス* | 弦 | (必須) 監視とサイズ変更に関連する通知アラートを送信するために Lambda 関数によって使用される、SES に登録された電子メール ID を入力します。 
+
+
+| *受信者のメールアドレス* | 弦 | (必須) アラート通知を受信するメール ID を入力します。 
+|===
++
+image:fsxn-monitoring-resizing-lambda-code.png["この画像は、AWS Lambda 関数コンソール上の Lambda コードを示しています。"]
+
+. *テスト*をクリックし、空の JSON オブジェクトを使用してテスト イベントを作成し、*呼び出し*をクリックしてテストを実行し、スクリプトが正しく実行されているかどうかを確認します。
+. テストが正常に完了したら、[*構成*] > [*トリガー*] > [*トリガーの追加*] に移動します。
++
+[listing]
+----
+Select a Source: EventBridge
+Rule: Create a new rule
+Rule name: <Enter any name>
+Rule type: Schedule expression
+Schedule expression: <Use "rate(1 day)" if you want the function to run daily or add your own cron expression>
+----
++
+「追加」をクリックします。
+
++
+image:fsxn-monitoring-resizing-eventbridge.png["この画像は、AWS Lambda 関数コンソールのイベントブリッジ作成ウィンドウを示しています。"]
+
+
+
+====
+
+
+== まとめ
+
+提供されるソリューションを使用すると、FSx ONTAPストレージを定期的に監視し、ユーザーが指定したしきい値に基づいてサイズを変更し、アラート メカニズムを提供する監視ソリューションを簡単に設定できます。これにより、FSx ONTAP の使用と監視のプロセスがシームレスになり、管理者はビジネスクリティカルなアクティビティに集中できるようになり、必要に応じてストレージが自動的に拡張されます。

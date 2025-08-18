@@ -1,0 +1,37 @@
+---
+sidebar: sidebar 
+keywords: Cyber vault, cybervault, cyber-vault, data protection, security, ransomware, ONTAP, hardening 
+permalink: cyber-vault/ontap-cyber-vault-terminology.html 
+summary: ONTAP用語を使用したサイバーボールト 
+---
+= Cyber Vault ONTAP用語
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ../media/
+
+
+[role="lead"]
+これらは、サイバー ボールト アーキテクチャでよく使用される用語です。
+
+*自律型ランサムウェア保護 (ARP)* - 自律型ランサムウェア保護 (ARP) 機能は、NAS (NFS および SMB) 環境のワークロード分析を使用して、ランサムウェア攻撃の兆候となる可能性のある異常なアクティビティをプロアクティブにリアルタイムで検出し、警告します。攻撃の疑いが検出された場合、定期的なSnapshotコピーによる既存の保護に加えて、新しいSnapshotコピーも作成されます。詳細については、link:https://docs.netapp.com/us-en/ontap/anti-ransomware/index.html["自律型ランサムウェア保護に関するONTAPドキュメント"^]
+
+*エアギャップ（論理）* - ONTAPでNetAppストレージを論理エアギャップサイバーボールトとして構成することができます。link:https://docs.netapp.com/us-en/ontap/snaplock/commit-snapshot-copies-worm-concept.html["SnapLock Complianceによる Snapshot コピーの WORM 保護"^]
+
+*エアギャップ (物理)* - 物理的なエアギャップ システムにはネットワーク接続がありません。テープ バックアップを使用すると、イメージを別の場所に移動できます。  SnapLock Compliance の論理エアギャップは、物理的なエアギャップ システムと同様に堅牢です。
+
+*要塞ホスト* - 攻撃に耐えられるように構成された、隔離されたネットワーク上の専用コンピューター。
+
+*不変のスナップショット コピー* - 例外なく変更できないスナップショット コピー (サポート組織やストレージ システムを低レベル フォーマットする機能を含む)。
+
+*削除できないスナップショット コピー* - 例外なく削除できないスナップショット コピー (サポート組織やストレージ システムを低レベル フォーマットする機能を含む)。
+
+*改ざん防止スナップショット コピー* - 改ざん防止スナップショット コピーは、 SnapLock Complianceクロック機能を使用して、指定された期間、スナップショット コピーをロックします。これらのロックされたスナップショットは、どのユーザーまたはNetAppサポートでも削除できません。ランサムウェア攻撃、マルウェア、ハッカー、不正な管理者、または誤った削除によってボリュームが侵害された場合は、ロックされたスナップショット コピーを使用してデータを回復できます。詳細については、link:https://docs.netapp.com/us-en/ontap/snaplock/snapshot-lock-concept.html["改ざん防止スナップショットコピーに関するONTAPドキュメント"^]
+
+* SnapLock* - SnapLock は、規制やガバナンスの目的で WORM ストレージを使用してファイルを変更されていない形式で保持する組織向けの高性能コンプライアンス ソリューションです。詳細については、 link:https://docs.netapp.com/us-en/ontap/snaplock/["SnapLockに関するONTAPドキュメント"^] 。
+
+* SnapMirror* - SnapMirror は、データを効率的に複製するように設計された災害復旧レプリケーション テクノロジーです。 SnapMirror は、オンプレミスまたはクラウド内のセカンダリ システムにミラー (またはデータの正確なコピー)、ボールト (スナップショット コピーの保持期間が長いデータのコピー)、またはその両方を作成できます。これらのコピーは、災害、クラウドへのバースト、サイバー ボールト (ボールト ポリシーを使用してボールトをロックする場合) など、さまざまな目的に使用できます。詳細については、link:https://docs.netapp.com/us-en/ontap/concepts/snapmirror-disaster-recovery-data-transfer-concept.html["SnapMirrorに関するONTAPドキュメント"^]
+
+* SnapVault* - ONTAP 9.3 では、 SnapVault は廃止され、vault または mirror-vault ポリシーを使用してSnapMirrorを構成することが推奨されます。この用語は現在でも使われていますが、あまり使われなくなっています。詳細については、 link:https://docs.netapp.com/us-en/ontap/concepts/snapvault-archiving-concept.html["SnapVaultに関するONTAPドキュメント"^] 。
