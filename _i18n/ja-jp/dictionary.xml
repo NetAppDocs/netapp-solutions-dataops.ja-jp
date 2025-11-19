@@ -1413,7 +1413,6 @@
   <block id="14324adbfb79ad4b6832f6a02a1275db" category="list-text">XCPライセンスを以下からダウンロードしてください。<block ref="eab886d42d2df7a710066e6d9bf6f5f5" category="inline-link-rx"></block> 。  </block>
   <block id="7481213bd7173438d06de418474e428b" category="list-text">mysupport.netapp.com にNetAppアカウントが必要です。または、無料で登録することもできます。</block>
   <block id="d25e9f08475ddf6a2701e7cfbd67ff06" category="list-text">ライセンスをダウンロードして準備してください。</block>
-  <block id="b9611b870758eac97bd0c3bcb3fc8026" category="list-text">Azure NetAppボリュームごとに、または XCP カタログのクラウド内の Cloud Volume Service (プレミアム サービス レベル) ごとに、オンプレミスで 1 つの NFS 共有を作成します。</block>
   <block id="3d19c697861d11cce0f1d78d41cfea64" category="list-text">NAS ボリュームを作成し、データの保存先の共有を構成します。</block>
   <block id="4f2a304b9680876edc7cb61b5c4c7134" category="list-text">複数の XCP インスタンスの場合、複数のソース フォルダーまたはファイルから宛先にデータを転送するには、1 つ以上のサーバーまたはクラウド インスタンスが必要です。</block>
   <block id="adc4e34febc2f5919cfa03870630c2fc" category="list-text">maxdir サイズ (デフォルトは 308 MB) は、1 つのフォルダー内の最大ファイル数 (約 100 万) を定義します。ファイル数を増やすには、maxdir サイズ値を増やします。値を増やすと、追加の CPU サイクルに影響します。</block>
@@ -1521,4 +1520,5 @@
   <block id="1eff9302c319abb4fe8a4c919bb75125" category="sidebar">NetApp XCPによるデータ移行</block>
   <block id="acf055fa7efae33ce06471f448ae1267" category="sidebar">顧客シナリオ</block>
   <block id="c5071cdf8081474104ef1eee5ec6d784" category="sidebar">ACLを使用したCIFSデータ移行 ソースストレージボックスからONTAPへ</block>
+  <block id="212969b8fbef38a460a102c0de1dc0a4" category="list-text">XCP カタログ用に、Azure NetAppボリュームごとに、またはクラウド内のGoogle Cloud NetApp Volumes(プレミアム サービス レベル) ごとに、オンプレミスで 1 つの NFS 共有を作成します。</block>
 </blocks>
