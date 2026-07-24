@@ -18,6 +18,7 @@ ONTAPハードウェアとソフトウェアを使用して、サイバー ボ�
 
 
 
+[[ontap-hardware-recommendations]]
 == ONTAPハードウェアの推奨事項
 
 すべてのONTAP統合物理アレイは、サイバー ボールトの実装に使用できます。
@@ -29,6 +30,7 @@ ONTAPハードウェアとソフトウェアを使用して、サイバー ボ�
 
 
 
+[[ontap-software-recommendations]]
 == ONTAPソフトウェアの推奨事項
 
 ONTAP 9.14.1以降では、SnapMirror関係のSnapMirrorポリシーで特定のSnapMirrorラベルの保持期間を指定することで、ソース ボリュームからデスティネーション ボリュームにレプリケートされたSnapshotコピーを、ルールで指定した保持期間にわたって保持できます。保持期間を指定しない場合は、デスティネーション ボリュームのデフォルトの保持期間が使用されます。
@@ -37,6 +39,7 @@ ONTAP 9.13.1 以降では、snaplock-type オプションを「non-snaplock」�
 
 
 
+[[metrocluster-configuration]]
 == MetroCluster構成
 
 MetroCluster構成の場合は、次の点に注意してください。

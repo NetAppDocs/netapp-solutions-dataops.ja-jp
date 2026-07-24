@@ -18,6 +18,7 @@ summary: ONTAPのサイバーボールトを強化するために推奨される
 
 
 
+[[cyber-vault-hardening-recommendations]]
 == サイバー金庫の強化に関する推奨事項
 
 * サイバー金庫の管理プレーンを分離する

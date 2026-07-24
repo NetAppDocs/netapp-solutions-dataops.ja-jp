@@ -18,6 +18,7 @@ summary: このセクションでは、7-Mode で動作するNetApp Data ONTAP�
 
 
 
+[[transitioning-7-mode-nfsv3-storage-to-ontap-for-nfs-data]]
 == NFSデータ用の7モードNFSv3ストレージをONTAPに移行する
 
 このセクションでは、ソース 7-Mode NFSv3 エクスポートをONTAPシステムに移行するための手順を次の表に示します。
@@ -410,6 +411,7 @@ Sending statistics...
 
 
 
+[[transitioning-7-mode-volume-snapshot-copies-to-ontap]]
 == 7-ModeボリュームのスナップショットコピーをONTAPに移行する
 
 このセクションでは、ソース 7-Mode ボリュームのNetApp Snapshot コピーをONTAPに移行する手順について説明します。
@@ -797,6 +799,7 @@ xcp: resume '7msnap_res1': Values marked with a * include operations before resu
 
 
 
+[[migrating-aclv4-from-netapp-7-mode-to-a-netapp-storage-system]]
 == NetApp 7-Mode からNetAppストレージ システムへの ACLv4 の移行
 
 このセクションでは、ソース NFSv4 エクスポートをONTAPシステムに移行するための手順を段階的に説明します。
@@ -806,6 +809,7 @@ NOTE: NetApp、ソース NFSv4 ボリュームがエクスポートされ、ク�
 
 
 
+[[prerequisites-for-migrating-a-source-nfsv4-export-to-ontap]]
 === ソースNFSv4エクスポートをONTAPに移行するための前提条件
 
 ソース NFSv4 エクスポートをONTAPに移行する前に、次の前提条件を満たしている必要があります。
@@ -833,6 +837,7 @@ drwxr-xr-x --- root root 4KiB 4KiB 17m43s vol1/DIR1/DIR11/DIR2/DIR22
 ....
 
 
+[[subdirectories-options]]
 === サブディレクトリオプション
 
 サブディレクトリを操作するための 2 つのオプションは次のとおりです。
@@ -1251,6 +1256,7 @@ xcp: resume 'id1': Values marked with a * include operations before resume
 
 
 
+[[transitioning-7-mode-smb-storage-to-ontap-for-cifs-data]]
 == CIFSデータ用の7-Mode SMBストレージをONTAPに移行する
 
 このセクションでは、ソース 7-Mode SMB 共有をONTAPシステムに移行するための手順を段階的に説明します。

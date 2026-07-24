@@ -18,6 +18,7 @@ NetAppは、link:https://github.com/NetApp/ransomeware-cybervault-automation["�
 
 
 
+[[what-this-script-does]]
 == このスクリプトが行うこと
 
 * クラスタ ピアリング
@@ -31,6 +32,7 @@ NetAppは、link:https://github.com/NetApp/ransomeware-cybervault-automation["�
 
 
 
+[[how-to-use-this-script]]
 == このスクリプトの使い方
 
 link:https://github.com/NetApp/ransomeware-cybervault-automation["スクリプトをダウンロードする"^]スクリプトを使用するには、以下の手順に従ってください。
@@ -48,6 +50,7 @@ NOTE: Cron モードを使用すると、データ転送の停止と再開をス
 
 
 
+[[modes-of-operation]]
 == 動作モード
 
 自動化スクリプトは3つの実行モードを提供します - `configure` 、 `analyze`そして `cron`。

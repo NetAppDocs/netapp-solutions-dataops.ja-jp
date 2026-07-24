@@ -31,6 +31,7 @@ NOTE: FSx ONTAPを使用して AWS に指定されたサイバーボールトを
 
 
 
+[[high-level-steps-to-create-a-ontap-cyber-vault]]
 == ONTAPサイバーボールトを作成するための大まかな手順
 
 * ピアリング関係を作成する
@@ -72,6 +73,7 @@ image:ontap-cyber-vault-air-gap.png["ONTAPサイバーボールトを作成す�
 
 
 
+[[solution-components]]
 == ソリューションコンポーネント
 
 ソース クラスターと宛先クラスターで 9.15.1 を実行しているNetApp ONTAP 。

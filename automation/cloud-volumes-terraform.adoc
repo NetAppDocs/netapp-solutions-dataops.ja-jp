@@ -18,6 +18,7 @@ summary: 'このページでは、Terraform を使用してクラウド プロ�
 
 
 
+[[pre-requisites]]
 == 前提条件
 
 . テラフォーム >= 0.13
@@ -28,12 +29,14 @@ summary: 'このページでは、Terraform を使用してクラウド プロ�
 
 
 
+[[provider-documentation]]
 == プロバイダーのドキュメント
 
 Cloud Manager の Terraform プロバイダーのドキュメントは次の場所から入手できます。link:https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs["https://registry.terraform.io/providers/NetApp/netapp-cloudmanager/latest/docs"]
 
 
 
+[[controlling-the-provider-version]]
 === プロバイダーのバージョンを制御する
 
 プロバイダーのバージョンも制御できることに注意してください。これは、Terraform 構成の required_providers ブロックによって制御されます。
@@ -55,6 +58,7 @@ terraform {
 
 
 
+[[running-specific-modules]]
 == 特定のモジュールの実行
 
 .AWS

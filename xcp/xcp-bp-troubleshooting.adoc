@@ -18,6 +18,7 @@ summary: このセクションでは、 NetApp XCP を使用したデータ移�
 
 
 
+[[error-1-xcp-failed-with-nfs3-error-70-stale-filehandle-error-in-the-xcp-log]]
 == エラー 1: XCP が nfs3 エラー 70 で失敗しました: xcp.log に古いファイルハンドル エラーが記録されました
 
 *理由とガイダンス。*
@@ -26,6 +27,7 @@ summary: このセクションでは、 NetApp XCP を使用したデータ移�
 
 
 
+[[error-2-netapp-nfs-destination-volume-has-space-but-xcp-failed-with-nfs3-error-28-no-space-left-on-device]]
 == エラー 2: NetApp NFS 宛先ボリュームには空き容量がありますが、XCP が nfs3 エラー 28 で失敗しました: デバイスに空き容量がありません
 
 *理由とガイダンス。*

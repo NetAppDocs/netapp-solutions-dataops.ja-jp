@@ -15,6 +15,7 @@ summary: NetAppデータ管理ソリューション関連資料の最近の変�
 
 
 
+[[18-august-2025]]
 == 2025年8月18日
 
 NetAppソリューションサイトは、link:https://docs.netapp.com/us-en/netapp-solutions-family/index.html["NetAppソリューションファミリー"^]これには次のサイトが含まれます。

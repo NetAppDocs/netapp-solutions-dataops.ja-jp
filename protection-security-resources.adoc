@@ -15,6 +15,7 @@ summary: データ保護とセキュリティに関連する追加の技術レ�
 
 
 
+[[nva-1143-netapp-hci-nist-security-controls-for-fisma-with-hytrust-for-multitenant-infrastructure-nva-design-and-deployment]]
 == NVA-1143: NetApp HCI - マルチテナント インフラストラクチャ向け HyTrust を使用した FISMA 向け NIST セキュリティ制御 - NVA の設計と導入
 
 Arvind Ramakrishnan、Abhinav Singh、 NetApp
@@ -25,6 +26,7 @@ link:https://www.netapp.com/pdf.html?item=/media/17065-nva1143pdf.pdf["NVA-1143:
 
 
 
+[[tr-4320-netapp-e-series-and-commvault-data-platform-v11-reference-architecture-and-storage-best-practices]]
 == TR-4320: NetApp EシリーズとCommvault Data Platform V11 - リファレンスアーキテクチャとストレージのベストプラクティス
 
 Akash Gupta、 NetApp Girish Chanchlani、Commvault
@@ -35,6 +37,7 @@ link:https://www.netapp.com/pdf.html?item=/media/17042-tr4320pdf.pdf["TR-4320: N
 
 
 
+[[tr-4471-e-series-and-ef-series-reference-architecture-and-storage-best-practices-with-veeam-backup-replication-9-5]]
 == TR-4471: E シリーズおよび EF シリーズのリファレンス アーキテクチャと Veeam Backup & Replication 9.5 を使用したストレージのベスト プラクティス
 
 Akash Gupta、 NetApp Shawn Lieu（アメリカ）、Stefan Renner（EMEA）、Michael Cade（パフォーマンス）、Veeam
@@ -45,6 +48,7 @@ link:https://www.netapp.com/pdf.html?item=/media/17159-tr4471pdf.pdf["TR-4471: V
 
 
 
+[[tr-4704-deploying-veritas-netbackup-with-netapp-e-series-storage]]
 == TR-4704: NetApp Eシリーズストレージを使用したVeritas NetBackupの導入
 
 Akash Gupta氏とPrincipled Technologies、 NetApp

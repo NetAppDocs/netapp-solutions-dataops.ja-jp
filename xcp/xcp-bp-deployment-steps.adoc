@@ -18,6 +18,7 @@ summary: このセクションでは、データ転送用のNetApp XCP の導入
 
 
 
+[[test-bed-details]]
 == テストベッドの詳細
 
 次の表は、この展開とパフォーマンス検証に使用されたテスト ベッドの詳細を示しています。
@@ -56,6 +57,7 @@ summary: このセクションでは、データ転送用のNetApp XCP の導入
 |===
 
 
+[[deployment-steps-nas]]
 == 展開手順 - NAS
 
 データ転送用にNetApp XCP を導入するには、まず宛先の場所に XCP ソフトウェアをインストールしてアクティブ化します。詳細は、 https://mysupport.netapp.com/documentation/productlibrary/index.html?productID=63064["NetApp XCP ユーザーガイド"^] 。これには、次の手順を実行します。
@@ -234,12 +236,14 @@ NOTE: Windows ユーザーは、アクセス制御リスト (ACL) を使用し�
 
 
 
+[[deployment-steps-hdfsmaprfs-data-migration]]
 == 導入手順 - HDFS/MapRFS データの移行
 
 このセクションでは、HDFS/MapRFS から NFS へ、またはその逆にデータを移行する、Hadoop Filesystem Data Transfer to NAS という新しい XCP 機能について説明します。
 
 
 
+[[prerequisites]]
 === 前提条件
 
 MapRFS/HDFS 機能の場合、非ルート ユーザー環境で次の手順を実行する必要があります。通常、非ルート ユーザーは、hdfs、mapr、または HDFS および MapRFS ファイルシステムに変更を加える権限を持つユーザーです。
@@ -272,6 +276,7 @@ export NHDFS_LIBHDFS_PATH=$HADOOP_HOME/lib64/libhdfs.so
 
 
 
+[[deployment-steps-non-root-user-migrates-hdfsmaprfs-data-to-netapp-nfs]]
 === 導入手順 - 非ルートユーザーがHDFS/MaprFSデータをNetApp NFSに移行する
 
 . 展開手順セクションの 1 ～ 9 の手順と同じ手順に従います。

@@ -18,12 +18,14 @@ keywords: netapp, solutions, automation, ansible
 
 
 
+[[aws-authentication-requirements-for-cvo-and-connector-using-netapp-cloud-manager]]
 == NetApp Cloud Manager を使用した CVO およびコネクタの AWS 認証要件
 
 AWX/Ansible Tower 経由で Ansible プレイブックを使用して CVO およびコネクタの自動デプロイメントを構成するには、次の情報が必要です。
 
 
 
+[[acquiring-accesssecret-keys-from-aws]]
 === AWS からアクセスキー/シークレットキーを取得する
 
 . Cloud Manager に CVO とコネクタをデプロイするには、AWS アクセス/シークレット キーが必要です。  IAM -> ユーザー -> ユーザー名 -> セキュリティ認証情報 -> アクセスキーの作成 を起動して、AWS コンソールでキーを取得します。
@@ -37,6 +39,7 @@ image:access-keys.png["トークンをリフレッシュ"]
 
 
 
+[[acquiring-refresh-token-from-netapp-cloud-central]]
 === NetApp Cloud Centralからリフレッシュトークンを取得する
 
 . アカウントの資格情報を使用してクラウドセントラルアカウントにログインします。 https://services.cloud.netapp.com/refresh-token[]
@@ -47,6 +50,7 @@ image:token-authentication.png["トークンをリフレッシュ"]
 
 
 
+[[acquiring-client-id]]
 === クライアントIDの取得
 
 . APIページにアクセスしてクライアントIDをコピーします。 https://services.cloud.netapp.com/developer-hub[] 。
@@ -58,6 +62,7 @@ image:client-id.png["クライアントID"]
 
 
 
+[[acquiring-key-pair-from-aws]]
 === AWSからキーペアを取得する
 
 . AWS コンソールで、「キーペア」を検索し、「pem」でキーペアを作成します。  key_pair の名前を覚えておいてください。コネクタをデプロイするときにこの名前を使用します。
@@ -67,6 +72,7 @@ image:key-pair.png["キーペア"]
 
 
 
+[[acquiring-account-id]]
 === アカウントIDの取得
 
 . Cloud Manager で、[アカウント] > [アカウントの管理] をクリックし、AWX の変数で使用するアカウント ID をコピーします。
