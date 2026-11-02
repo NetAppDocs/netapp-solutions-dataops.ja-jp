@@ -232,7 +232,7 @@ XCPドキュメントでは、複数のオプション（例付き）が提供�
 
 NOTE: Windows ユーザーは、アクセス制御リスト (ACL) を使用してデータをコピーする必要があります。 NetAppはコマンドの使用を推奨しています `xcp copy -acl -fallbackuser\<username> -fallbackgroup\<username or groupname> <source> <destination>`。パフォーマンスを最大限に高めるには、ACL 付きの SMB データと NFS と SMB の両方でアクセス可能なデータを持つソース ボリュームを考慮すると、ターゲットは NTFS ボリュームである必要があります。  XCP（NFS版）を使用してLinuxサーバーからデータをコピーし、XCP（SMB版）同期を実行します。 `-acl`そして `-nodata`Windows サーバーのオプションを使用して、ACL をソース データからターゲット SMB データにコピーします。
 
-詳細な手順については、 https://helpcenter.netwrix.com/NA/Configure_IT_Infrastructure/Accounts/DCA_Manage_Auditing_Security_Log.html["「監査とセキュリティログの管理」ポリシーの構成"^] 。
+詳細な手順については、 https://docs.netwrix.com/docs/1secure/admin/datacollection/activedirectoryauditing/manageauditingsecuritylog["「監査とセキュリティログの管理」ポリシーの構成"^]を参照してください。
 
 
 

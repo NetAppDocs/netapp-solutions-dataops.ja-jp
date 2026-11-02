@@ -33,7 +33,7 @@ Akash Gupta、 NetApp Girish Chanchlani、Commvault
 
 TR-4320 では、Commvault Data Platform V11 環境でNetApp E シリーズ ストレージを使用する場合のリファレンス アーキテクチャとベスト プラクティスについて概説しています。  Commvault とNetApp は共同でこのリファレンス アーキテクチャを開発し、 NetApp E シリーズ ストレージを使用した Commvault Data Platform V11 の導入に関するガイダンスを提供し、このソリューションの適用までの時間を短縮します。
 
-link:https://www.netapp.com/pdf.html?item=/media/17042-tr4320pdf.pdf["TR-4320: NetApp EシリーズとCommvault Data Platform V11 - リファレンスアーキテクチャとストレージのベストプラクティス"^]
+link:https://www.netapp.com/pdf.html?item=/media/17042-tr4320.pdf["TR-4320: NetApp EシリーズとCommvault Data Platform V11 - リファレンスアーキテクチャとストレージのベストプラクティス"^]
 
 
 
@@ -44,7 +44,7 @@ Akash Gupta、 NetApp Shawn Lieu（アメリカ）、Stefan Renner（EMEA）、M
 
 TR-4471 では、Veeam Backup & Replication 9.5 環境でNetApp E シリーズ ストレージを使用する場合のリファレンス アーキテクチャとベスト プラクティスについて概説しています。
 
-link:https://www.netapp.com/pdf.html?item=/media/17159-tr4471pdf.pdf["TR-4471: Veeam Backup  Replication 9.5 を使用した E シリーズおよび EF シリーズのリファレンス アーキテクチャとストレージのベスト プラクティス"^]
+link:https://www.netapp.com/pdf.html?item=/media/17159-tr4471.pdf["TR-4471: Veeam Backup  Replication 9.5 を使用した E シリーズおよび EF シリーズのリファレンス アーキテクチャとストレージのベスト プラクティス"^]
 
 
 
@@ -55,4 +55,4 @@ Akash Gupta氏とPrincipled Technologies、 NetApp
 
 TR-4704 では、 NetApp E シリーズ ストレージへの Veritas NetBackup の導入について説明します。
 
-link:https://www.netapp.com/pdf.html?item=/media/16433-tr-4704pdf.pdf["TR-4704: NetApp Eシリーズストレージを使用したVeritas NetBackupの導入"^]
+link:https://www.netapp.com/pdf.html?item=/media/16433-tr-4704.pdf["TR-4704: NetApp Eシリーズストレージを使用したVeritas NetBackupの導入"^]
